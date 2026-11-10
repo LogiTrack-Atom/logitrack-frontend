@@ -54,7 +54,7 @@ export function LoginPage({ register = false }: { register?: boolean }) {
       <section className={styles.panel} aria-labelledby="auth-title">
         {USE_MOCKS && <MockBanner />}
         <h1 id="auth-title">{register ? 'Crear cuenta de cliente' : 'Iniciar sesión'}</h1>
-        {USE_MOCKS && <p>Demostración CLIENTE: no se valida una contraseña real ni se crea una cuenta en el servidor. El perfil simulado es cliente@example.com.</p>}
+        {USE_MOCKS && <p>Demostración sin cuentas reales: cliente@example.com, admin@example.com y repartidor@example.com. Usá una contraseña ficticia; no se valida contra un servidor.</p>}
         <p>La sesión se conserva al navegar. Al recargar, tendrás que ingresar nuevamente.</p>
         {state.reason === 'expired' && <p role="alert">Tu sesión venció. Ingresá nuevamente.</p>}
         {state.reason === 'unauthorized' && <p role="alert">La sesión terminó porque el servicio rechazó el acceso. Ingresá nuevamente.</p>}

@@ -1,3 +1,4 @@
+import { mockToken } from '../mocks/personas'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
@@ -9,7 +10,7 @@ import type { AuthTransport } from './session'
 
 const credentials = { email: 'cliente@example.com', password: 'demo-no-real' }
 function setup(path = '/shipments', overrides: Partial<AuthTransport> = {}) {
-  const login = vi.fn(async () => tokenMock)
+  const login = vi.fn(async () => ({ ...tokenMock, accessToken: mockToken('CLIENTE') }))
   const register = vi.fn(async () => usuarioClienteMock)
   const session = new SessionStore({ mode: 'mock', login, register, me: async () => usuarioClienteMock, ...overrides })
   const router = createMemoryRouter(routes, { initialEntries: [path] })

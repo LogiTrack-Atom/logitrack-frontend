@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '../../shared/components/Button'
 import { RequestErrorNotice } from '../../shared/components/RequestErrorNotice'
-import { RequestError } from '../../shared/http/httpError'
+import { HttpError, RequestError } from '../../shared/http/httpError'
 import { USE_MOCKS } from '../../shared/config/env'
 import { useAuth } from '../auth/session/authContext'
 import { DEMO_COURIER_ID } from './mocks/shipmentServer'
@@ -54,7 +54,7 @@ export function ShipmentDetail({ service, selection, onChanged }: { service: Shi
     } catch (cause) {
       if (!controller.signal.aborted) {
         setError(cause)
-        if (cause instanceof RequestError && ['network', 'response'].includes(cause.code)) setUncertain(true)
+        if ((cause instanceof RequestError && ['network', 'response'].includes(cause.code)) || (cause instanceof HttpError && cause.status >= 500)) setUncertain(true)
       }
     } finally {
       if (pending.current === controller) pending.current = null

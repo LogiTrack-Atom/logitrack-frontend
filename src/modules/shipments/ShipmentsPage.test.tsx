@@ -6,7 +6,7 @@ import { tokenMock } from '../auth/mocks/auth.mock'
 import { mockPersonaForEmail, mockToken } from '../auth/mocks/personas'
 import type { Rol } from '../auth/types'
 import { createSessionHttpClient } from '../../shared/http/sessionHttpClient'
-import { RequestError } from '../../shared/http/httpError'
+import { HttpError, RequestError } from '../../shared/http/httpError'
 import { ShipmentsPage } from './ShipmentsPage'
 import { createShipmentMockRequest, DEMO_COURIER_ID } from './mocks/shipmentServer'
 import { createShipmentService } from './services/shipmentService'
@@ -62,6 +62,29 @@ describe('espacio de envíos', () => {
     await act(async () => { resolve({ ...envioMock, repartidorId: null }); await late })
     await screen.findByText('Alta confirmada: LT-MOCK-0001.')
     expect(screen.getByLabelText('Nombre')).toHaveProperty('value', '')
+  })
+
+  it.each([500, 502, 503, 504])('un HTTP %i en alta exige reconciliar antes de otra escritura', async (status) => {
+    const create = vi.fn(async () => { throw new HttpError(status) })
+    await setup('CLIENTE', service => { service.create = create })
+    const form = fillCreate()
+    fireEvent.submit(form)
+    await screen.findByText('El alta no está confirmada. Revisá el listado antes de volver a crear: repetir podría duplicar el envío.')
+    expect(screen.getByRole('button', { name: 'Registrar envío' })).toHaveProperty('disabled', true)
+    fireEvent.submit(form)
+    expect(create).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([500, 502, 503, 504])('un HTTP %i al cancelar bloquea repetir hasta releer el recurso', async (status) => {
+    const cancel = vi.fn(async () => { throw new HttpError(status) })
+    await setup('ADMIN', service => { service.cancel = cancel })
+    fireEvent.click(await screen.findByRole('button', { name: 'Ver LT-MOCK-0001' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancelar envío' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmar operación' }))
+    await screen.findByText('Resultado no confirmado. Actualizá el detalle y verificá el estado antes de decidir otra operación.')
+    expect(screen.getByRole('button', { name: 'Cancelar envío' }).closest('fieldset')).toHaveProperty('disabled', true)
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmar operación' }))
+    expect(cancel).toHaveBeenCalledTimes(1)
   })
 
   it('no envía medidas inválidas ni redondea al registrar', async () => {

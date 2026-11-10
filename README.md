@@ -1,5 +1,7 @@
 # logitrack-frontend
 
+> Actualización de sesión: la decisión del equipo permite recuperar el acceso al recargar mediante cookie HttpOnly de renovación, sin guardar JWT en Web Storage. Ver [sesión renovable](docs/SESION_RENOVABLE.md). Sustituye la política anterior de recarga de esta entrega.
+
 Cliente web de LogiTrack Atom: gestión de envíos, repartidores y acceso por roles mediante API Gateway.
 
 La aplicación incluye autenticación, navegación por roles y gestión de envíos, repartidores y asociaciones administrativas. Funciona con demostración sin red por defecto o con servicios reales mediante `VITE_USE_MOCKS=false`. Ver [integración](docs/INTEGRACION.md) y [despliegue](docs/DESPLIEGUE.md).

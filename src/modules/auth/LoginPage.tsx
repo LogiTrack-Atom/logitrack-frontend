@@ -55,7 +55,8 @@ export function LoginPage({ register = false }: { register?: boolean }) {
         {USE_MOCKS && <MockBanner />}
         <h1 id="auth-title">{register ? 'Crear cuenta de cliente' : 'Iniciar sesión'}</h1>
         {USE_MOCKS && <p>Demostración sin cuentas reales: cliente@example.com, admin@example.com y repartidor@example.com. Usá una contraseña ficticia; no se valida contra un servidor.</p>}
-        <p>La sesión se conserva al navegar. Al recargar, tendrás que ingresar nuevamente.</p>
+        <p>{USE_MOCKS ? 'La sesión de demostración se conserva al navegar y se reinicia al recargar.' : 'La sesión se recupera al recargar mientras la renovación siga vigente. El token de acceso permanece en memoria.'}</p>
+        {state.reason === 'logout-unconfirmed' && <p role="alert">El acceso local terminó, pero no se confirmó el cierre en el servidor. Volvé a conectarte para completar el cierre antes de recargar.</p>}
         {state.reason === 'expired' && <p role="alert">Tu sesión venció. Ingresá nuevamente.</p>}
         {state.reason === 'unauthorized' && <p role="alert">La sesión terminó porque el servicio rechazó el acceso. Ingresá nuevamente.</p>}
         {error && <p role="alert">{error}</p>}

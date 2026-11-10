@@ -3,6 +3,8 @@ import type { CredencialesLogin, RegistroRequest, Token, Usuario } from '../type
 
 /** Un transporte no conserva credenciales y debe propagar AbortSignal. */
 export interface AuthTransport {
+  resume?(signal: AbortSignal): Promise<Token>
+  endSession?(): Promise<void>
   mode: 'mock' | 'gateway'
   login(data: CredencialesLogin, signal: AbortSignal): Promise<Token>
   me(token: string, signal: AbortSignal): Promise<Usuario>
@@ -14,7 +16,7 @@ export interface SessionSnapshot {
   user: Usuario | null
   expiresAt: number | null
   epoch: number
-  reason?: 'logout' | 'expired' | 'failed' | 'unauthorized'
+  reason?: 'logout' | 'expired' | 'failed' | 'unauthorized' | 'logout-unconfirmed'
 }
 
 /** Lee exp/sub para el ciclo de vida local; no verifica firmas ni autoriza operaciones. */
@@ -40,7 +42,7 @@ const cancelled = () => new DOMException('Operación de sesión cancelada.', 'Ab
 
 /**
  * Sesión aislada en memoria. Cada cambio de identidad invalida y aborta las operaciones
- * anteriores, incluso si el transporte ignora la cancelación. No usa almacenamiento web.
+ * anteriores, incluso si el transporte ignora la cancelación. El JWT no se guarda en almacenamiento web; el transporte puede persistir intención de logout sin credenciales.
  */
 export class SessionStore {
   #transport: AuthTransport
@@ -48,9 +50,13 @@ export class SessionStore {
   #snapshot: SessionSnapshot = { status: 'anonymous', user: null, expiresAt: null, epoch: 0 }
   #listeners = new Set<() => void>()
   #pending = new Set<AbortController>()
+  #restoration: Promise<void> | undefined
   #timer: ReturnType<typeof setTimeout> | undefined
 
-  constructor(transport: AuthTransport) { this.#transport = transport }
+  constructor(transport: AuthTransport) {
+    this.#transport = transport
+    if (transport.resume) this.#snapshot = { ...this.#snapshot, status: 'authenticating' }
+  }
 
   getSnapshot = (): SessionSnapshot => this.#snapshot
 
@@ -80,11 +86,35 @@ export class SessionStore {
     }
   }
 
-  logout = (reason: SessionSnapshot['reason'] = 'logout'): void => {
+  #clear = (reason: SessionSnapshot['reason'] = 'logout'): void => {
     this.#token = null
     this.#pending.forEach((controller) => controller.abort())
     this.#pending.clear()
     this.#publish({ status: 'anonymous', user: null, expiresAt: null, epoch: this.#snapshot.epoch + 1, reason })
+  }
+
+  /** Limpia datos de inmediato y confirma la revocación remota sin retener el JWT. */
+  logout = (reason: SessionSnapshot['reason'] = 'logout'): void => {
+    this.#clear(reason)
+    const epoch = this.#snapshot.epoch
+    if (this.#transport.endSession) {
+      void this.#transport.endSession().catch(() => {
+        if (this.#snapshot.epoch === epoch) this.#publish({ ...this.#snapshot, reason: 'logout-unconfirmed' })
+      })
+    }
+  }
+
+  /** Cierra la vista al recibir intención de logout/login de otra pestaña; no genera bucles. */
+  clearFromAnotherTab = (): void => { this.#clear() }
+
+  /** Una sola restauración por montaje lógico, también bajo React StrictMode. */
+  restore = (): Promise<void> => {
+    if (!this.#restoration) {
+      this.#restoration = this.#transport.resume
+        ? this.#authenticate((signal) => this.#transport.resume!(signal)).catch(() => undefined)
+        : Promise.resolve()
+    }
+    return this.#restoration
   }
 
   /** Se ejecuta también en foco, pageshow y antes/después de cada operación privada. */
@@ -98,7 +128,11 @@ export class SessionStore {
   }
 
   async login(credentials: CredencialesLogin): Promise<void> {
-    this.logout()
+    return this.#authenticate((signal) => this.#transport.login(credentials, signal))
+  }
+
+  async #authenticate(operation: (signal: AbortSignal) => Promise<Token>): Promise<void> {
+    this.#clear()
     const epoch = this.#snapshot.epoch
     const controller = new AbortController()
     this.#pending.add(controller)
@@ -107,7 +141,7 @@ export class SessionStore {
       if (controller.signal.aborted || epoch !== this.#snapshot.epoch) throw cancelled()
     }
     try {
-      const token = await this.#transport.login(credentials, controller.signal)
+      const token = await operation(controller.signal)
       current()
       if (token.tokenType !== 'Bearer' || !token.accessToken || !Number.isFinite(token.expiresIn) || token.expiresIn <= 0) throw new Error()
       const lifetime = this.#transport.mode === 'gateway'
@@ -138,7 +172,7 @@ export class SessionStore {
     try {
       await this.#transport.register(data, controller.signal)
       if (controller.signal.aborted || epoch !== this.#snapshot.epoch) throw cancelled()
-      this.logout()
+      this.#clear()
     } catch {
       if (controller.signal.aborted || epoch !== this.#snapshot.epoch) throw cancelled()
       this.logout('failed')

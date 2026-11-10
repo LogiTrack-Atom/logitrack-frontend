@@ -75,6 +75,7 @@ export function ShipmentDetail({ service, selection, onChanged }: { service: Shi
       <dl className={styles.details}>
         <dt>UUID</dt><dd>{envio.id}</dd><dt>Tracking</dt><dd>{envio.codigoSeguimiento}</dd>
         <dt>Estado</dt><dd>{envio.estado}</dd><dt>Cliente</dt><dd>{envio.cliente.nombre} ({envio.cliente.email})</dd>
+        {admin && <><dt>UUID del cliente</dt><dd>{envio.cliente.id}</dd></>}
         <dt>Repartidor</dt><dd>{envio.repartidorId ?? 'Sin asignar'}</dd>
         <dt>Origen</dt><dd>{envio.origen.calle} {envio.origen.numero}, {envio.origen.ciudad} ({envio.origen.codigoPostal})</dd>
         <dt>Destino</dt><dd>{envio.destino.calle} {envio.destino.numero}, {envio.destino.ciudad} ({envio.destino.codigoPostal})</dd>

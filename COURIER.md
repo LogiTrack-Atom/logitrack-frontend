@@ -22,7 +22,7 @@ Los clientes privados quedan ligados a la generación en que se crearon. Al camb
 
 `createDemoGateway` compone los servidores ficticios Courier y Shipment; la aplicación usa una instancia en memoria de la pestaña. Las pruebas crean instancias aisladas. Cambiar de módulo/perfil conserva los datos del servidor de demostración; recargar reinicia sus registros. No hay almacenamiento persistente ni llamadas reales.
 
-Courier incluye dos fichas ficticias iniciales: `...0201` vinculada al usuario REPARTIDOR `...0003`, y `...0202` de otra identidad. Las altas generan nuevos UUID y comienzan ACTIVO; quedan sin asociación de usuario hasta implementar el flujo #7. No se infiere propiedad por el correo ni se inventa una asociación automática.
+Courier incluye dos fichas ficticias iniciales: `...0201` vinculada al usuario REPARTIDOR `...0003`, y `...0202` de otra identidad. Las altas generan nuevos UUID y comienzan ACTIVO. La integración #7 permite asociarlas a una cuenta mediante el flujo administrativo descrito en ADMIN.md. No se infiere propiedad por el correo ni se inventa una asociación automática.
 
 Shipment consulta el estado actual de este registro para asignar y para comenzar EN_RUTA. Un INACTIVO o inexistente produce 422 sin mutar envío/historial. Reactivar permite continuar. Asignar sigue sin cambiar estado ni agregar un evento. La disponibilidad ACTIVO no reserva capacidad ni implica exclusividad. El comportamiento de ENTREGADO conserva las reglas existentes; no se agregó una comprobación de disponibilidad ajena al contrato.
 

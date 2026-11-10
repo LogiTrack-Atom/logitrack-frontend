@@ -1,0 +1,44 @@
+name: Verificación de frontend
+
+on:
+  pull_request:
+    branches: [develop]
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Preparar Node 24 y caché npm
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24.15.0'
+          cache: npm
+      - name: Instalar dependencias del lockfile
+        run: npm ci --no-audit --no-fund
+      - name: Lint
+        run: npm run lint
+      - name: Pruebas unitarias y de componentes
+        run: npm test
+      - name: Compilar demostración
+        run: npm run build
+      - name: Compilar integración real
+        run: npm run build
+        env:
+          VITE_USE_MOCKS: 'false'
+      - name: Construir imagen real
+        run: docker build --build-arg VITE_USE_MOCKS=false -t logitrack-frontend:ci .
+      - name: Verificar runtime Nginx aislado
+        run: bash .github/scripts/verify-container.sh

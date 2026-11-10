@@ -35,7 +35,7 @@ Plantilla en `.env.example`. Las variables `VITE_*` son públicas: no poner secr
 
 | Variable | Valor por defecto | Descripción |
 |---|---|---|
-| `VITE_API_BASE_URL` | `/api` | Base de las llamadas al backend. |
+| `VITE_API_BASE_URL` | vacío (mismo origen) | Base de las llamadas al backend. |
 | `VITE_USE_MOCKS` | `true` | Los mocks quedan activos salvo que valga exactamente `false`. |
 
 ## Estructura

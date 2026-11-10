@@ -11,11 +11,14 @@ const moduleRoutes = appModules.map((item): RouteObject =>
     : { path: item.path.slice(1), element: item.element },
 )
 
-export const router = createBrowserRouter([
+/** Rutas de la app. Se exportan por separado para poder probarlas con un router en memoria. */
+export const routes: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
   {
     path: '/',
     element: <AppLayout />,
     children: [...moduleRoutes, { path: '*', element: <NotFoundPage /> }],
   },
-])
+]
+
+export const router = createBrowserRouter(routes)

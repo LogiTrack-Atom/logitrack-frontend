@@ -1,3 +1,4 @@
+import type { Envio } from './types'
 import { useMemo, useState } from 'react'
 import { Button } from '../../shared/components/Button'
 import { RequestErrorNotice } from '../../shared/components/RequestErrorNotice'
@@ -15,13 +16,20 @@ function rejectedText(status: AssignmentStatus): string {
 }
 
 /** Asignación asíncrona (solo ADMIN, envío PENDIENTE). Convive con la asignación directa; no la reemplaza. */
-export function AssignmentPanel({ service, envioId, onSettled }: { service: ShipmentService; envioId: string; onSettled: () => void }) {
+export function AssignmentPanel({ service, envioId, onSettled, onVerified }: { service: ShipmentService; envioId: string; onSettled: () => void; onVerified: (envio: Envio) => void }) {
   const api = useMemo<AssignmentApi>(
     () => ({
       request: (intent, signal) => service.requestAssignment(intent.envioId, intent.repartidorId, intent.idempotencyKey, signal),
       read: (operationId, signal) => service.assignmentOperation(operationId, signal),
+      verify: async (operation, signal) => {
+        const envio = await service.detail(operation.envioId, signal)
+        if (signal.aborted) return false
+        const matches = envio.id === operation.envioId && envio.repartidorId === operation.repartidorId
+        if (matches) onVerified(envio)
+        return matches
+      },
     }),
-    [service],
+    [service, onVerified],
   )
   const { view, start, retry, refresh } = useAssignmentFlow(api, envioId, onSettled)
   const [courier, setCourier] = useState('')
@@ -60,7 +68,7 @@ export function AssignmentPanel({ service, envioId, onSettled }: { service: Ship
         {view.phase === 'delayed' && (
           <>
             <p>
-              Demorado: la solicitud sigue pendiente y el repartidor aún no está asignado. Se conserva el seguimiento de la
+              Demorado: el resultado todavía no pudo confirmarse. Se conserva el seguimiento de la
               operación {view.operation.operationId} y no se crea otra solicitud automáticamente.
             </p>
             {view.checkFailed && <p role="alert">No se pudo consultar ahora. Probá de nuevo en unos segundos.</p>}

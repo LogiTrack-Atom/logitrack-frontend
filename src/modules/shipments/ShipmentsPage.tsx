@@ -72,7 +72,7 @@ export function ShipmentsPage({ service: provided }: { service?: ShipmentService
       {validation && <p role="alert">{validation}</p>}
       <p>Conocer un tracking no habilita acceso a un envío ajeno.</p>
     </section>
-    {selection && <ShipmentDetail key={`${selection.kind}:${selection.value}:${detailRevision}`} service={service} selection={selection} onChanged={refreshAll} />}
+    {selection && <ShipmentDetail key={`${selection.kind}:${selection.value}:${detailRevision}`} service={service} selection={selection} onChanged={refreshAll} onListChanged={refresh} />}
     <Allowed roles={UI_ROLES.createShipment}><ShipmentCreate service={service} onRefresh={refresh} onCreated={(envio) => {
       setNotice(`Alta confirmada: ${envio.codigoSeguimiento}.`)
       setSelection({ kind: 'id', value: envio.id }); refresh()

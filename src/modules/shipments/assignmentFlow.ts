@@ -6,6 +6,7 @@ import type { AssignmentIntent, AssignmentOperation } from './assignment'
 export interface AssignmentApi {
   request: (intent: AssignmentIntent, signal: AbortSignal) => Promise<{ status: number; data: unknown }>
   read: (operationId: string, signal: AbortSignal) => Promise<unknown>
+  verify: (operation: AssignmentOperation, signal: AbortSignal) => Promise<boolean>
 }
 
 export type AssignmentView =
@@ -60,10 +61,10 @@ function sameTarget(operation: AssignmentOperation, reference: AssignmentOperati
   )
 }
 
-/** 503 del POST significa "no se insertó nada"; otros 5xx y cortes de red dejan el resultado incierto. */
+/** Un 5xx puede provenir del proxy después del commit: conservar la clave original. */
 function failureView(cause: unknown): AssignmentView {
   if (cause instanceof RequestError && (cause.code === 'network' || cause.code === 'response')) return { phase: 'uncertain' }
-  if (cause instanceof HttpError && cause.status >= 500 && cause.status !== 503) return { phase: 'uncertain' }
+  if (cause instanceof HttpError && cause.status >= 500) return { phase: 'uncertain' }
   return { phase: 'failed', error: cause }
 }
 
@@ -101,9 +102,8 @@ export async function runAssignment(
     emit({ phase: 'failed', error: new RequestError('response') })
     return
   }
-  const first = viewFor(operation)
-  emit(first)
-  if (first.phase === 'requested') await trackOperation(api, operation, signal, emit, wait)
+  emit({ phase: 'requested', operation })
+  await trackOperation(api, operation, signal, emit, wait)
 }
 
 /**
@@ -142,6 +142,11 @@ export async function trackOperation(
       }
       last = operation
       const next = viewFor(operation)
+      if (next.phase === 'confirmed') {
+        const matches = await api.verify(operation, signal)
+        if (signal.aborted) return
+        if (!matches) { emit({ phase: 'failed', error: new RequestError('response') }); return }
+      }
       emit(next)
       if (next.phase !== 'requested') return
     } catch (cause) {
@@ -172,6 +177,11 @@ export async function refreshOperation(
       return
     }
     const next = viewFor(operation)
+    if (next.phase === 'confirmed') {
+      const matches = await api.verify(operation, signal)
+      if (signal.aborted) return
+      if (!matches) { emit({ phase: 'failed', error: new RequestError('response') }); return }
+    }
     emit(next.phase === 'requested' ? { phase: 'delayed', operation } : next)
   } catch (cause) {
     if (signal.aborted) return

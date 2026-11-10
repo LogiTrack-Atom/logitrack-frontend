@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Button } from '../../shared/components/Button'
 import { RequestErrorNotice } from '../../shared/components/RequestErrorNotice'
-import { RequestError } from '../../shared/http/httpError'
+import { HttpError, RequestError } from '../../shared/http/httpError'
 import { shipmentFromForm } from './validation'
 import type { Envio } from './types'
 import type { ShipmentService } from './services/shipmentService'
@@ -37,7 +37,7 @@ export function ShipmentCreate({ service, onCreated, onRefresh }: { service: Shi
     } catch (cause) {
       if (controller.signal.aborted) return
       setError(cause)
-      if (cause instanceof RequestError && ['network', 'response'].includes(cause.code)) {
+      if ((cause instanceof RequestError && ['network', 'response'].includes(cause.code)) || (cause instanceof HttpError && cause.status >= 500)) {
         setUncertain(true)
         onRefresh()
       }

@@ -59,7 +59,7 @@ export function LoginPage({ register = false }: { register?: boolean }) {
         {state.reason === 'expired' && <p role="alert">Tu sesión venció. Ingresá nuevamente.</p>}
         {state.reason === 'unauthorized' && <p role="alert">La sesión terminó porque el servicio rechazó el acceso. Ingresá nuevamente.</p>}
         {error && <p role="alert">{error}</p>}
-        {registered && <p role="status">Registro simulado completado. Podés iniciar sesión.</p>}
+        {registered && <p role="status">Registro completado. Podés iniciar sesión.</p>}
         <form onSubmit={submit} className={styles.form} aria-busy={busy}>
           <label htmlFor="email">Correo electrónico</label>
           <input id="email" type="email" autoComplete="username" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} disabled={busy} />

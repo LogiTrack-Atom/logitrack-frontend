@@ -1,10 +1,12 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { SessionStore } from '../../modules/auth/session/session'
 import { usuarioClienteMock, tokenMock } from '../../modules/auth/mocks/auth.mock'
 import { API_PREFIX } from '../config/api'
 import { HttpError } from './httpError'
 import type { HttpRequest, RequestOptions } from './httpClient'
 import { createSessionHttpClient } from './sessionHttpClient'
+
+afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.resetModules() })
 
 const PATH = `${API_PREFIX.shipment}/envios`
 const credentials = { email: 'cliente@example.com', password: 'demo' }
@@ -45,9 +47,23 @@ describe('requests vinculados a sesión', () => {
     expect(spy).not.toHaveBeenCalled()
   })
 
-  it('el transporte predeterminado bloquea integración real antes de G0', async () => {
+  it('el modo de demostración no envía tokens ficticios por el transporte predeterminado', async () => {
     const session = await signedIn()
     await expect(createSessionHttpClient(session).request(PATH)).rejects.toMatchObject({ code: 'integration' })
+  })
+
+  it('el modo real usa fetch con el token privado y el prefijo del Gateway', async () => {
+    vi.stubEnv('VITE_USE_MOCKS', 'false')
+    vi.resetModules()
+    const fetchSpy = vi.fn(async () => new Response('[]'))
+    vi.stubGlobal('fetch', fetchSpy)
+    const { createSessionHttpClient: realClient } = await import('./sessionHttpClient')
+    const session = await signedIn()
+    await expect(realClient(session).request(PATH)).resolves.toEqual([])
+    expect(fetchSpy).toHaveBeenCalledWith(PATH, expect.objectContaining({
+      credentials: 'omit', redirect: 'error',
+      headers: expect.objectContaining({ Authorization: `Bearer ${tokenMock.accessToken}` }),
+    }))
   })
 
   it('401 y 403 simultáneos limpian una sola vez, sin errores de la sesión anterior', async () => {

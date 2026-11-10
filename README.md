@@ -2,8 +2,7 @@
 
 Cliente web de LogiTrack Atom: gestión de envíos, repartidores y acceso por roles mediante API Gateway.
 
-> **Estado: base del frontend (S04-02).** Todo funciona con **datos provisionales (mock)**. No hay
-> integración real con el backend ni sesión de usuario. Ver [Estado y límites](#estado-y-límites).
+La aplicación incluye autenticación, navegación por roles y gestión de envíos, repartidores y asociaciones administrativas. Funciona con demostración sin red por defecto o con servicios reales mediante `VITE_USE_MOCKS=false`. Ver [integración](docs/INTEGRACION.md) y [despliegue](docs/DESPLIEGUE.md).
 
 ## Requisitos
 
@@ -60,8 +59,8 @@ src/
 - Cada carpeta de `src/modules` es autónoma y los módulos no se importan entre sí. Para sumar un
   módulo: crear la carpeta y agregar **una entrada** en `src/app/modules.tsx`; el router y el menú
   salen de esa lista. Detalle en `src/modules/README.md`.
-- Todo acceso al backend pasa por `withMock(datosMock, () => request<T>(ruta))`. Con los mocks
-  activos no se hace ninguna llamada real.
+- Las pantallas privadas usan factories de servicio y `createSessionHttpClient`: token en memoria,
+  cancelación por sesión y cierre ante 401/403. Los facades heredados sin sesión permanecen sin red.
 - Las pantallas con datos mock se rotulan con `<MockBanner />` (el layout lo muestra globalmente).
 - Estilos con CSS Modules y variables de `tokens.css`, sin librería de UI.
 - TypeScript con `verbatimModuleSyntax` y `erasableSyntaxOnly`: usar `import type` para tipos y no
@@ -70,14 +69,9 @@ src/
 
 ## Estado y límites
 
-- **Sin integración real:** ningún servicio llama al backend mientras `VITE_USE_MOCKS` no sea `false`.
-- **Contratos en borrador:** los tipos, rutas y mocks salen del borrador de contratos del frontend
-  (`docs/sprint04/contratos-frontend/` en `shipment-service`, rama `feature/71-contratos-frontend`),
-  pendiente de aprobación e integración. Los prefijos de ruta están en `src/shared/config/api.ts`.
-  Esta base no acredita contrato definitivo ni integración: eso lo validan S04-01 y S04-04 a S04-12.
-- **Sin sesión:** no hay login real, almacenamiento de token, interceptor `Authorization`, guards ni
-  manejo de 401/403 (corresponde a S04-04). Las páginas de cada módulo son placeholders.
-- **Sin proxy ni Docker:** el proxy de Vite hacia el gateway y el Dockerfile con nginx quedan
-  pendientes y fuera de esta base.
-- **Pruebas:** son de humo (layout, navegación, rótulo de mocks y servicios sin red). Se probó solo
-  en Windows 10 con Node 20.19.0 y npm 10.8.2.
+- Mocks por defecto; el modo real requiere Gateway y servicios disponibles. Los prefijos están en `src/shared/config/api.ts`.
+- Sesión en memoria: recargar requiere autenticarse; no se guarda el JWT en almacenamiento del navegador. Cerrar sesión local no revoca un Bearer ya emitido.
+- Los guards y menús ayudan a navegar; el backend controla roles y pertenencia de los recursos.
+- El proxy de Vite conserva las rutas `/applications/...`; Docker se prepara en la issue #8.
+- Hosting público y aceptación final del conjunto integrado en `develop`: pendientes.
+- La auditoría S04-00 está cerrada como alcance diferido y no bloquea la integración funcional.

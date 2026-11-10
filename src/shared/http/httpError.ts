@@ -23,7 +23,7 @@ const REQUEST_MESSAGES = {
   network: 'No se pudo contactar al servicio. Si estabas guardando cambios, verificá el resultado antes de repetir la operación.',
   response: 'El servicio no devolvió la respuesta JSON esperada. Si estabas guardando cambios, verificá el resultado antes de repetir la operación.',
   destination: 'El destino solicitado no pertenece a la configuración permitida del Gateway.',
-  integration: 'Integración real pendiente de G0.',
+  integration: 'La operación requiere un cliente de sesión configurado para el Gateway.',
 } as const
 
 /** Fallas de transporte/configuración con mensajes fijos aptos para mostrar como texto. */

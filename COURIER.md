@@ -1,5 +1,7 @@
 # Integración Courier — S04-08
 
+> Estado actualizado en #9: el modo real se habilita con `VITE_USE_MOCKS=false` y se verificó por Gateway. S04-00/G0 está retirado como requisito. Ver [resultados y pendientes vigentes](docs/INTEGRACION.md). Las cantidades de pruebas y ramas descritas abajo corresponden a la entrega original de cada módulo.
+
 Adaptación de [frontend#6](https://github.com/LogiTrack-Atom/logitrack-frontend/issues/6) sobre la base compartida de Gab y las PR #16/#17/#18. Rama `feature/6-courier-integracion`, creada desde Development con origen `feature/5-shipment-flujo` (`814eb02`). La base temporal de su PR es esa dependencia: no fusionar en ella; integrar primero las dependencias y cambiar la base a `develop` antes de aceptar/mergear.
 
 ## Aportes conservados y alcance
@@ -26,7 +28,6 @@ Courier incluye dos fichas ficticias iniciales: `...0201` vinculada al usuario R
 
 Shipment consulta el estado actual de este registro para asignar y para comenzar EN_RUTA. Un INACTIVO o inexistente produce 422 sin mutar envío/historial. Reactivar permite continuar. Asignar sigue sin cambiar estado ni agregar un evento. La disponibilidad ACTIVO no reserva capacidad ni implica exclusividad. El comportamiento de ENTREGADO conserva las reglas existentes; no se agregó una comprobación de disponibilidad ajena al contrato.
 
-Los mocks y el bloqueo del transporte real permanecen activos. Estas pruebas no acreditan persistencia ni pertenencia de servicios desplegados. G0, contratos #71, política docente de sesión y hosting/aceptación remota siguen pendientes. #6 no se cierra con esta preparación. Administración #7 y aceptación integral #9 continúan como entregas separadas.
 
 ## Validación
 

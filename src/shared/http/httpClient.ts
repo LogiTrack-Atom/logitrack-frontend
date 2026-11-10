@@ -13,7 +13,7 @@ export interface RequestOptions {
 export type HttpRequest = <T>(path: string, options?: RequestOptions) => Promise<T>
 export interface HttpClient { request: HttpRequest }
 
-/** Transporte preparado para Gateway. Su uso real sigue bloqueado en los adapters activos. */
+/** Transporte JSON del Gateway; el cliente de sesión añade y protege la credencial privada. */
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const url = gatewayUrl(path)
   if (options.signal?.aborted) throw new DOMException('Solicitud cancelada.', 'AbortError')
@@ -51,5 +51,5 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   }
 }
 
-/** Cliente activo por defecto: no habilita red con solo desactivar mocks antes de G0. */
+/** Protege los facades heredados sin sesión y evita enviar credenciales de demostración a la red. */
 export const integrationBlockedRequest: HttpRequest = async () => { throw new RequestError('integration') }

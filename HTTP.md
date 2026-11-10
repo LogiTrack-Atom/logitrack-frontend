@@ -1,12 +1,13 @@
 # Cliente HTTP, roles y errores — S04-05
 
+> Estado actualizado en #9: el modo real se habilita con `VITE_USE_MOCKS=false` y se verificó por Gateway. S04-00/G0 está retirado como requisito. Ver [resultados y pendientes vigentes](docs/INTEGRACION.md). Las cantidades de pruebas y ramas descritas abajo corresponden a la entrega original de cada módulo.
+
 Entrega provisional de [frontend#4](https://github.com/LogiTrack-Atom/logitrack-frontend/issues/4), dependiente de la sesión de [PR #16](https://github.com/LogiTrack-Atom/logitrack-frontend/pull/16). La rama se creó desde Development de la issue usando `feature/3-auth-sesion` como origen (`0d0c2ab`), porque esa dependencia aún no está integrada. La PR se compara contra esa rama para mostrar solo el cambio de #4; deberá pasar a `develop` después de integrar #16. No se modificó `develop`.
 
 ## Destinos y credenciales
 
 `gatewayUrl` acepta únicamente el origen configurado en `VITE_API_BASE_URL` (vacío para mismo origen) y los tres prefijos conocidos de seguridad, shipment y courier. Una base cross-origin debe ser un origen HTTP(S) sin ruta, credenciales, query ni fragmento. Se rechazan otros orígenes, rutas relativas ambiguas, prefijos parecidos, barras invertidas, segmentos de traversal, escapes ambiguos y caracteres de control antes de fetch.
 
-El transporte usa `credentials: omit`, `redirect: error` y `cache: no-store`: no agrega cookies, no sigue redirecciones con Bearer ni mantiene caché HTTP de la respuesta. No registra tokens, URLs de autenticación ni cuerpos de error. La configuración pública no es una credencial. Host/TLS/CORS efectivos y aceptación remota siguen pendientes de G0 y del traspaso del servidor.
 
 `createSessionHttpClient` obtiene el token desde `SessionStore.runAuthenticated`. El consumidor no puede reemplazar Authorization. Combina la cancelación del consumidor y de la sesión; descarta resultados si cualquiera se cancela aunque el transporte ignore la señal. Un 401/403 de una generación vigente hace logout una vez: el guard desmonta los datos privados y redirige al login. Un error viejo no termina una sesión nueva. Login y registro públicos usan su adapter separado; un login fallido se muestra en el formulario sin reintento automático.
 
@@ -26,9 +27,7 @@ Pertenencia a un envío, asignación propia de un repartidor y autorización efe
 
 ## Integración pendiente y consumo por módulos
 
-`useHttpClient` crea un cliente privado por generación de SessionStore; una instancia anterior no inicia requests después de cambiar la identidad. Su transporte predeterminado está bloqueado hasta G0; las pruebas inyectan un transporte controlado. Las fachadas mock heredadas de Gab mantienen sus firmas y fixtures, y sus llamadas reales también quedan bloqueadas aunque se desactiven los mocks. Los futuros módulos #5/#6/#7 deberán vincular sus operaciones privadas a este cliente; las fachadas mock solas no demuestran autenticación ni aislamiento de negocio. El adapter Gateway de #3 está preparado pero no activo.
 
-No se activa la red cambiando una variable de entorno. La habilitación real requerirá resolver G0, contratos y la validación docente de persistencia; después se seleccionará explícitamente el transporte `request` del cliente común y se realizará aceptación de extremo a extremo. No se aceptan ni cierran #3/#4 con esta preparación.
 
 ## Verificación
 

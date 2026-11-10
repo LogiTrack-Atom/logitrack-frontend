@@ -1,5 +1,7 @@
 # Módulo Shipment — S04-07
 
+> Estado actualizado en #9: el modo real se habilita con `VITE_USE_MOCKS=false` y se verificó por Gateway. S04-00/G0 está retirado como requisito. Ver [resultados y pendientes vigentes](docs/INTEGRACION.md). Las cantidades de pruebas y ramas descritas abajo corresponden a la entrega original de cada módulo.
+
 Implementación provisional de [frontend#5](https://github.com/LogiTrack-Atom/logitrack-frontend/issues/5), sobre `feature/4-http-roles-errores` (`2f744ff`), dependiente de PR #17 y de PR #16. La rama se creó desde Development de la issue. La PR usa esa base temporal para mostrar únicamente el módulo nuevo; no fusionar en ella. Después de integrar las dependencias, cambiar la base a `develop` antes de aceptar/mergear. `develop` permanece sin cambios.
 
 ## Pantallas y flujo
@@ -26,7 +28,6 @@ La base simulada permanece al cambiar de perfil, como un servidor de demostraci�
 
 ## Estado de integración y hosting
 
-G0, contratos #71, la política docente de persistencia y aceptación remota siguen pendientes. Los mocks están activos; desactivarlos mantiene bloqueada la autenticación y el transporte real. El adapter de pantalla ya está preparado para consumir el cliente común cuando se habilite explícitamente tras G0. No se aceptan ni cierran #3/#4/#5 con estas pruebas de simulación.
 
 Las issues iniciales #1/#2 de Gab están integradas. Se verificaron localmente `npm ci` y `npm run dev`. Según su actualización al equipo, el hosting aún está en evaluación por recursos disponibles; no hay evidencia de despliegue remoto listo y no se configuró otro hosting ni Minikube con esta entrega.
 

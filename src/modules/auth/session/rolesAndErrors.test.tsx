@@ -1,3 +1,4 @@
+import { mockToken } from '../mocks/personas'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
@@ -16,7 +17,7 @@ import { Allowed } from './RequireRole'
 const credentials = { email: 'cliente@example.com', password: 'demo' }
 async function setup(roles: Rol[], path = '/') {
   const user = { ...usuarioClienteMock, roles }
-  const session = new SessionStore({ mode: 'mock', login: async () => tokenMock, me: async () => user, register: async () => user })
+  const session = new SessionStore({ mode: 'mock', login: async () => ({ ...tokenMock, accessToken: mockToken(roles[0] ?? 'CLIENTE') }), me: async () => user, register: async () => user })
   await session.login(credentials)
   const router = createMemoryRouter(routes, { initialEntries: [path] })
   render(<AuthProvider store={session}><RouterProvider router={router} /></AuthProvider>)

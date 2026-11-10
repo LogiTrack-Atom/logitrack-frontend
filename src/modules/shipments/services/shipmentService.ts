@@ -105,3 +105,19 @@ export function asociarUsuarioARepartidor(
     ),
   )
 }
+
+/** API de la pantalla: todos sus requests pasan por el cliente privado de sesión (#4). */
+export function createShipmentService(client: import('../../../shared/http/httpClient').HttpClient) {
+  return {
+    list: (estado?: EstadoEnvio, signal?: AbortSignal) => client.request<Envio[]>(withQuery(BASE, { estado }), { signal }),
+    detail: (id: string, signal?: AbortSignal) => client.request<Envio>(`${BASE}/${encodeURIComponent(id)}`, { signal }),
+    tracking: (code: string, signal?: AbortSignal) => client.request<Envio>(`${BASE}/seguimiento/${encodeURIComponent(code)}`, { signal }),
+    history: (id: string, signal?: AbortSignal) => client.request<HistorialEvento[]>(`${BASE}/${encodeURIComponent(id)}/historial`, { signal }),
+    create: (body: EnvioRequest, signal?: AbortSignal) => client.request<Envio>(BASE, { method: 'POST', body, signal }),
+    assign: (id: string, repartidorId: string, signal?: AbortSignal) => client.request<Envio>(`${BASE}/${encodeURIComponent(id)}/repartidor`, { method: 'PUT', body: { repartidorId }, signal }),
+    advance: (id: string, estado: EstadoEnvio, signal?: AbortSignal) => client.request<Envio>(`${BASE}/${encodeURIComponent(id)}/estado`, { method: 'PATCH', body: { estado }, signal }),
+    cancel: (id: string, signal?: AbortSignal) => client.request<Envio>(`${BASE}/${encodeURIComponent(id)}/cancelacion`, { method: 'PATCH', signal }),
+  }
+}
+
+export type ShipmentService = ReturnType<typeof createShipmentService>

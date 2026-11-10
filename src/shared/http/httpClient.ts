@@ -6,6 +6,8 @@ export interface RequestOptions {
   body?: unknown
   headers?: Record<string, string>
   signal?: AbortSignal
+  /** Devuelve {status,data} para contratos que deben distinguir 201/200 de 202. */
+  includeStatus?: boolean
 }
 
 export type HttpRequest = <T>(path: string, options?: RequestOptions) => Promise<T>
@@ -39,9 +41,10 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   // ApiError, ProblemDetail, HTML y cuerpos vacíos de error comparten el status HTTP.
   // No consumir ni conservar un cuerpo de error que pueda reflejar información sensible.
   if (!response.ok) throw new HttpError(response.status)
-  if (response.status === 204 || response.status === 205) return undefined as T
+  if (response.status === 204 || response.status === 205) return (options.includeStatus ? { status: response.status, data: undefined } : undefined) as T
   try {
-    return await response.json() as T
+    const data: unknown = await response.json()
+    return (options.includeStatus ? { status: response.status, data } : data) as T
   } catch {
     if (options.signal?.aborted) throw new DOMException('Solicitud cancelada.', 'AbortError')
     throw new RequestError('response')

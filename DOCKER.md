@@ -1,6 +1,6 @@
 # Imagen frontend · S04-10 / issue #8
 
-Preparada sobre la base de DiazGab `7febc465cfa7542daa818dcd2e2e409803596a21`
+Preparada sobre la base de DiazGab `c1a967dffd87be1ef2b1d67596cef7e08f865b70`
 ([PR #11](https://github.com/LogiTrack-Atom/logitrack-frontend/pull/11)). La rama
 `feature/8-docker-frontend` conserva ese commit y agrega exclusivamente la entrega
 Docker. PR hacia develop dependiente de #11; revisar la diferencia con esa base y
@@ -77,11 +77,12 @@ No se publicó una imagen de release ni se desplegó sobre el servidor del equip
 ## Verificación ejecutada · 2026-11-09
 
 Build de imagen y compilación TypeScript/Vite aprobados con el lockfile de Gab.
-Lint aprobado dentro de la misma etapa build:
+Lint y 11 pruebas Vitest de Gab aprobados dentro de la misma etapa build:
 
 ```sh
 docker build --target build -t logitrack-frontend:sprint04-builder .
 docker run --rm logitrack-frontend:sprint04-builder npm run lint
+docker run --rm logitrack-frontend:sprint04-builder npm test
 ```
 
 Se comprobaron aislamiento del runtime y exclusión de archivos privados de ensayo.
@@ -101,7 +102,7 @@ y un proveedor HTTP ficticio. No accedió a datos ni servicios compartidos.
 | Gateway inalcanzable | 502, sin index.html; health estático no implica backend disponible |
 | Upstream ausente o inválido | Siete configuraciones rechazadas antes de iniciar |
 
-Imagen local efectivamente probada: `sha256:b0e15a713d823892c354128267822d0d463ddb56a9aeecb0bc151db3ed081b4c`.
+Imagen local efectivamente probada: `sha256:e8e19af1d2dc71389fa0c9ad4236e8b34f793018120a0faf32904310e26b5717`.
 La prueba de proxy no acredita reglas de negocio, persistencia o autorización de
 pertenencia del dominio. HTTPS upstream está configurado con verificación, pero
 este ensayo de transporte usó HTTP en loopback. No se afirma aceptación de arm64
@@ -111,3 +112,13 @@ servidores y material criptográfico efímero fueron retirados.
 Pendiente para integrar/cerrar: versión final y revisión de #11, reconciliación de
 contratos #71 y confirmación del host de #2. La auditoría diferida y G0 siguen
 pendientes por decisión del equipo; no se retoman por preparar esta imagen.
+
+
+### Sincronización de mocks y pruebas de Gab
+
+La [PR técnica #13](https://github.com/LogiTrack-Atom/logitrack-frontend/pull/13)
+mezcló los nuevos commits de Gab únicamente en feature/8-docker-frontend,
+conservando autores e historial. El árbol publicado coincide con el candidato que
+pasó build/lint y 11 pruebas Vitest. No se modificó develop ni la rama de Gab y no
+se integró su PR #11. La PR #12 permanece como entrega Docker en borrador; debe
+revisarse contra la versión final de la base y el hosting antes de aceptarse.

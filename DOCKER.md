@@ -32,8 +32,8 @@ Con base vacía, los módulos deben utilizar las rutas públicas
 `/applications/apishipment/api/v1`, `/applications/apicourier/api/v1` y
 `/applications/apisecurity/api/v1`. Para un Gateway cross-origin se puede compilar
 su origen público, con la allowlist CORS y los contratos previamente acordados.
-No habilitar integración real por cambiar un flag: G0, autenticación y aceptación
-funcional conservan sus tareas pendientes.
+El modo real requiere el adapter de sesión de #9 y los servicios disponibles.
+La auditoría S04-00/G0 fue retirada como requisito; no bloquea esta imagen.
 
 ## Ejecución y configuración del proxy
 
@@ -111,7 +111,7 @@ ni del host remoto. Los contenedores previos se conservaron y los recursos propi
 servidores y material criptográfico efímero fueron retirados.
 
 Pendientes de despliegue/aceptación completa: confirmar el host/TLS y accesos reales
-descritos en #14, y reconciliar contratos/ADR y G0. Las PR #11 y #14 ya están
+descritos en #14, y reconciliar contratos/ADR de red. Las PR #11 y #14 ya están
 integradas. La imagen está preparada para revisión; no se declara despliegue sobre
 el host ni aceptación de negocio. La auditoría diferida conserva su estado.
 

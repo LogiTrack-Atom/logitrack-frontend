@@ -1,0 +1,18 @@
+.workspace { display: grid; gap: var(--space-4); }
+.card { min-width: 0; padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-surface); }
+.card h2 { margin-top: 0; }
+.form { display: grid; gap: var(--space-3); }
+.card fieldset { min-width: 0; display: grid; gap: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius); }
+.card label { display: grid; gap: var(--space-1); }
+.card input, .card select { min-height: 44px; max-width: 100%; padding: var(--space-2); border: 1px solid var(--color-border); border-radius: 4px; font: inherit; color: var(--color-text); background: var(--color-surface); }
+.card :is(input, select):focus-visible { outline: 3px solid var(--color-primary); outline-offset: 2px; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: var(--space-3); margin-block: var(--space-3); }
+.tableScroll { overflow-x: auto; }
+.card table { width: 100%; border-collapse: collapse; }
+.card caption { text-align: left; padding-block: var(--space-2); }
+.card :is(th, td) { padding: var(--space-2); text-align: left; border-bottom: 1px solid var(--color-border); overflow-wrap: anywhere; }
+.details { display: grid; grid-template-columns: minmax(80px, 130px) minmax(0, 1fr); gap: var(--space-2); }
+.details dt { font-weight: 600; }
+.details dd { margin: 0; overflow-wrap: anywhere; }
+.actions { margin-top: var(--space-3); }
+@media (min-width: 760px) { .form { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

@@ -12,3 +12,22 @@
   flex-direction: column;
   gap: var(--space-4);
 }
+
+.form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.form input {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-2);
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font: inherit;
+}
+
+.form input:focus-visible {
+  outline: 3px solid var(--color-primary, #2563eb);
+  outline-offset: 2px;
+}

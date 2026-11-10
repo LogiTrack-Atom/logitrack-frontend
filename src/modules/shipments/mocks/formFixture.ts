@@ -5,4 +5,3 @@ export function validForm() {
   for (const prefix of ['origen', 'destino']) for (const [key, value] of Object.entries({ calle: 'Ejemplo', numero: '123', ciudad: 'Jujuy', codigoPostal: '4600' })) form.set(`${prefix}.${key}`, value)
   return form
 }
-

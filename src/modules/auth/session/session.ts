@@ -121,13 +121,11 @@ export class SessionStore {
         || (lifetime.subject !== null && lifetime.subject.toLowerCase() !== user.id.toLowerCase())) throw new Error()
       this.#token = token.accessToken
       this.#publish({ status: 'authenticated', user: structuredClone(user), expiresAt: lifetime.expiresAt, epoch })
-    } catch (error) {
+    } catch {
       current()
       this.logout('failed')
       // No mostrar cuerpos HTTP que pudieran reflejar una credencial del request.
-      // eslint-disable-next-line preserve-caught-error -- No retener cuerpos HTTP ni credenciales en cause.
-      throw new Error(error instanceof Error && error.message === 'Integración real pendiente de G0.'
-        ? error.message : 'No se pudo iniciar sesión. Revisá tus datos e intentá nuevamente.')
+      throw new Error('No se pudo iniciar sesión. Revisá tus datos e intentá nuevamente.')
     } finally { this.#pending.delete(controller) }
   }
 
@@ -141,12 +139,10 @@ export class SessionStore {
       await this.#transport.register(data, controller.signal)
       if (controller.signal.aborted || epoch !== this.#snapshot.epoch) throw cancelled()
       this.logout()
-    } catch (error) {
+    } catch {
       if (controller.signal.aborted || epoch !== this.#snapshot.epoch) throw cancelled()
       this.logout('failed')
-      // eslint-disable-next-line preserve-caught-error -- No retener cuerpos HTTP ni credenciales en cause.
-      throw new Error(error instanceof Error && error.message === 'Integración real pendiente de G0.'
-        ? error.message : 'No se pudo completar el registro. Revisá tus datos e intentá nuevamente.')
+      throw new Error('No se pudo completar el registro. Revisá tus datos e intentá nuevamente.')
     } finally { this.#pending.delete(controller) }
   }
 

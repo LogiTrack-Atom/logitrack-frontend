@@ -34,12 +34,14 @@ describe('transporte de autenticación', () => {
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
-  it('desactivar mocks no habilita red antes de G0', async () => {
+  it('selecciona el adapter real al desactivar mocks explícitamente', async () => {
     vi.stubEnv('VITE_USE_MOCKS', 'false')
-    const fetchSpy = vi.fn()
+    vi.resetModules()
+    const fetchSpy = vi.fn(async () => new Response(JSON.stringify({ accessToken: 'fixture', tokenType: 'Bearer', expiresIn: 60 })))
     vi.stubGlobal('fetch', fetchSpy)
-    const { activeAuthTransport: disabled } = await import('./sessionClient')
-    await expect(disabled.login({ email: 'demo@example.com', password: 'demo' }, new AbortController().signal)).rejects.toThrow('pendiente de G0')
-    expect(fetchSpy).not.toHaveBeenCalled()
+    const { activeAuthTransport: real, gatewayAuthTransport: adapter } = await import('./sessionClient')
+    expect(real).toBe(adapter)
+    await real.login({ email: 'demo@example.com', password: 'demo' }, new AbortController().signal)
+    expect(fetchSpy).toHaveBeenCalledWith(`${API_PREFIX.security}/auth/login`, expect.objectContaining({ method: 'POST' }))
   })
 })

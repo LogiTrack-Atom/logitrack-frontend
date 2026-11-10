@@ -2,7 +2,9 @@
 
 ## Estado
 
-**Hosting listo no es integración funcional.** Esta guía deja el servidor y el arranque local preparados. Las llamadas de negocio reales se habilitan recién después de G0 (shipment-service#70), de los contratos definitivos (#71) y de S04-00-E / S04-01. Mientras tanto el front corre con mocks rotulados.
+La demostración es el modo predeterminado. Para conectar las pantallas de autenticación, envíos, repartidores y administración al backend, definir `VITE_USE_MOCKS=false` y configurar el Gateway. Los requests privados usan la sesión en memoria y los prefijos `/applications/...`. La auditoría S04-00 está cerrada como alcance diferido y no condiciona esta integración.
+
+El hosting público continúa pendiente de confirmar. La verificación local se registra en `INTEGRACION.md`; no equivale a un despliegue público.
 
 ## Origen y destino
 

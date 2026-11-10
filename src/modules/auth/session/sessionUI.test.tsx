@@ -65,7 +65,7 @@ describe('autenticación y navegación', () => {
     const { session, register } = setup('/register')
     expect(screen.queryByRole('combobox')).toBeNull()
     fillAndSubmit('demostracion-segura')
-    await screen.findByText('Registro simulado completado. Podés iniciar sesión.')
+    await screen.findByText('Registro completado. Podés iniciar sesión.')
     expect(register.mock.calls).toHaveLength(1)
     expect(session.getSnapshot().status).toBe('anonymous')
     expect(screen.getByLabelText('Contraseña')).toHaveProperty('value', '')

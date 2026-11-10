@@ -14,7 +14,7 @@ import type {
 /**
  * PROVISIONAL: rutas y modelos del borrador de contratos (shipment-service#71).
  * Fachada de mocks heredada. Las pantallas privadas usarán useHttpClient (#4);
- * el login activo usa AuthProvider (#3). La red permanece bloqueada antes de G0. Nunca registrar credenciales ni tokens en logs.
+ * el login activo usa AuthProvider (#3). Los facades sin sesión no habilitan red; el adapter activo selecciona Gateway de forma explícita. Nunca registrar credenciales ni tokens en logs.
  */
 const BASE = API_PREFIX.security
 

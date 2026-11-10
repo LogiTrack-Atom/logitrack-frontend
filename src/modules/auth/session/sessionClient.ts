@@ -7,7 +7,7 @@ import { tokenMock, usuarioClienteMock } from '../mocks/auth.mock'
 import type { Token, Usuario } from '../types'
 import type { AuthTransport } from './session'
 
-/** Adapter provisional: solo rutas relativas conocidas del servicio de seguridad. */
+/** Adapter de autenticación: solo rutas relativas conocidas del servicio de seguridad. */
 export const gatewayAuthTransport: AuthTransport = {
   mode: 'gateway',
   login: (body, signal) => request<Token>(`${API_PREFIX.security}/auth/login`, { method: 'POST', body, signal }),
@@ -42,9 +42,5 @@ const mockTransport: AuthTransport = {
   register: (data, signal) => demo({ ...usuarioClienteMock, email: data.email }, signal),
 }
 
-const blocked = async (): Promise<never> => { throw new Error('Integración real pendiente de G0.') }
-
-/** Fail closed: quitar mocks no habilita integración antes de aprobar G0 y contratos. */
-export const activeAuthTransport: AuthTransport = USE_MOCKS ? mockTransport : {
-  mode: 'gateway', login: blocked, me: blocked, register: blocked,
-}
+/** El modo real se habilita explícitamente con VITE_USE_MOCKS=false. */
+export const activeAuthTransport: AuthTransport = USE_MOCKS ? mockTransport : gatewayAuthTransport

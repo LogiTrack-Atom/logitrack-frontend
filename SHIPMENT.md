@@ -36,3 +36,22 @@ Las issues iniciales #1/#2 de Gab están integradas. Se verificaron localmente `
 Node 24.15.0 y package-lock.json existente. Build, lint, `git diff --check` y 132 pruebas aprobados (108 previas, 24 adicionales). Cubren validaciones de escala/direcciones, DTO sin identidad elegible, pertenencia independiente del correo, rechazo sin efectos parciales, estados terminales, cancelación, doble submit, resultado incierto y respuestas tardías.
 
 En navegador local se completó CLIENTE crea → ADMIN asigna → REPARTIDOR EN_RUTA/ENTREGADO, conservando un evento al asignar y exactamente tres al entregar. Se verificó la presentación del detalle y el cierre de sesión. Los tests de componentes cubren además filtros, tracking, panel por rol e historial. Todo esto usa datos ficticios y no sustituye aceptación end-to-end contra Gateway/Courier/Shipment reales. No se modificó Java ni se ejecutaron suites backend.
+
+## Integración MQ — #10
+
+La base asíncrona fue integrada por DiazGab en PR25. Se habilita únicamente con
+`VITE_ASYNC_ASSIGNMENT=true`, `VITE_USE_MOCKS=false`, rol ADMIN y un envío PENDIENTE.
+El Dockerfile acepta ambos argumentos de construcción; no son secretos. La imagen P0
+mantiene el flag apagado y sus tags/digests no se reemplazan.
+
+Un 202, incluso al reconciliar una operación ya APPLIED, inicia seguimiento: confirmar
+requiere GET de la operación y GET del envío con el UUID de repartidor esperado. Un 503
+del proxy puede ocultar un commit; el reintento manual conserva Idempotency-Key como los
+otros 5xx inciertos. El sondeo tiene backoff y límite; no reenvía POST automáticamente.
+La confirmación actualiza el detalle y el listado sin desmontar el panel. La sesión y
+AbortSignal descartan resultados tardíos tras logout.
+
+`npm test`: 220 pruebas aprobadas, incluidas las 11 originales del flujo y 5 de integración
+adicionales (replay terminal, contraste del envío, lectura indisponible, logout del
+componente y reconciliación ante 503). `npm run lint` y `npm run build` aprobados.
+La aceptación contra Compose con RabbitMQ y sus límites queda en shipment-service#80.

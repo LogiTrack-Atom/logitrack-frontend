@@ -15,7 +15,7 @@ export interface ShipmentSelection { kind: 'id' | 'tracking'; value: string }
 type Action = 'assign' | 'advance' | 'cancel'
 
 /** Detalle confirmado y comandos explícitos, sin cambios optimistas ni reintentos automáticos. */
-export function ShipmentDetail({ service, selection, onChanged }: { service: ShipmentService; selection: ShipmentSelection; onChanged: () => void }) {
+export function ShipmentDetail({ service, selection, onChanged, onListChanged }: { service: ShipmentService; selection: ShipmentSelection; onChanged: () => void; onListChanged: () => void }) {
   const { state } = useAuth()
   const [data, setData] = useState<{ envio: Envio; history: HistorialEvento[] } | null>(null)
   const [loading, setLoading] = useState(true)
@@ -103,7 +103,7 @@ export function ShipmentDetail({ service, selection, onChanged }: { service: Shi
         {!admin && !repartidor && <p>Tu perfil permite consultar este envío.</p>}
         {['ENTREGADO', 'CANCELADO'].includes(envio.estado) && <p>Estado terminal: no hay transiciones disponibles.</p>}
       </fieldset>
-      {admin && envio.estado === 'PENDIENTE' && ASYNC_ASSIGNMENT && !USE_MOCKS && <AssignmentPanel key={envio.id} service={service} envioId={envio.id} onSettled={onChanged} />}
+      {admin && envio.estado === 'PENDIENTE' && ASYNC_ASSIGNMENT && !USE_MOCKS && <AssignmentPanel key={`${state.epoch}:${envio.id}`} service={service} envioId={envio.id} onSettled={onListChanged} onVerified={(updated) => setData({ envio: updated, history: data.history })} />}
     </>}
   </section>
 }

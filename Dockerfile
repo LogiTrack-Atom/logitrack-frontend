@@ -8,7 +8,8 @@ COPY public/ ./public/
 # Valores públicos compilados por Vite; nunca pasar secretos como build-args.
 ARG VITE_API_BASE_URL=""
 ARG VITE_USE_MOCKS=true
-RUN VITE_API_BASE_URL="$VITE_API_BASE_URL" VITE_USE_MOCKS="$VITE_USE_MOCKS" npm run build
+ARG VITE_ASYNC_ASSIGNMENT=false
+RUN VITE_ASYNC_ASSIGNMENT="$VITE_ASYNC_ASSIGNMENT" VITE_API_BASE_URL="$VITE_API_BASE_URL" VITE_USE_MOCKS="$VITE_USE_MOCKS" npm run build
 
 FROM nginx@sha256:583b7f2fce1cdb8da5ad5c39ebd3c33b98b87d493190e548bdee1fa8c619c311 AS runtime
 LABEL org.opencontainers.image.source="https://github.com/LogiTrack-Atom/logitrack-frontend"

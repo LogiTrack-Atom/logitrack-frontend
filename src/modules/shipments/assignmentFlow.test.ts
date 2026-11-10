@@ -49,7 +49,7 @@ function harness() {
 }
 
 function apiWith(read: AssignmentApi['read'], request?: AssignmentApi['request']): AssignmentApi {
-  return { request: request ?? (() => Promise.resolve({ status: 202, data: operation('PENDING') })), read }
+  return { request: request ?? (() => Promise.resolve({ status: 202, data: operation('PENDING') })), read, verify: async () => true }
 }
 
 describe('asignación asíncrona', () => {
@@ -155,7 +155,7 @@ describe('asignación asíncrona', () => {
     const cases: Array<[() => Promise<{ status: number; data: unknown }>, string]> = [
       [() => Promise.reject(new RequestError('network')), 'uncertain'],
       [() => Promise.reject(new HttpError(502)), 'uncertain'],
-      [() => Promise.reject(new HttpError(503)), 'failed'],
+      [() => Promise.reject(new HttpError(503)), 'uncertain'],
       [() => Promise.reject(new HttpError(409)), 'failed'],
       [() => Promise.resolve({ status: 200, data: operation('PENDING') }), 'uncertain'],
       [() => Promise.resolve({ status: 202, data: { roto: true } }), 'uncertain'],
@@ -172,4 +172,32 @@ describe('asignación asíncrona', () => {
     expect(parseOperation(operation('LO_QUE_SEA'))).toBeNull()
     expect(parseOperation(null)).toBeNull()
   })
+})
+
+it('un replay 202 APPLIED se verifica por GET y por envío antes de confirmar', async () => {
+  const h = harness(), sequence: string[] = []
+  const api: AssignmentApi = {
+    request: async () => { sequence.push('POST'); return { status: 202, data: operation('APPLIED') } },
+    read: async () => { sequence.push('GET operación'); return operation('APPLIED') },
+    verify: async () => { sequence.push('GET envío'); return true },
+  }
+  await runAssignment(api, intent, new AbortController().signal, h.emit, h.wait)
+  expect(sequence).toEqual(['POST', 'GET operación', 'GET envío'])
+  expect(h.phases()).toEqual(['requesting', 'requested', 'confirmed'])
+})
+
+it('APPLIED con envío reasignado no confirma la asignación vigente', async () => {
+  const h = harness(), api = apiWith(async () => operation('APPLIED'))
+  api.verify = async () => false
+  await runAssignment(api, intent, new AbortController().signal, h.emit, h.wait)
+  expect(h.phases()).not.toContain('confirmed')
+  expect(h.views.at(-1)?.phase).toBe('failed')
+})
+
+it('si falla leer el envío conserva seguimiento acotado y no confirma APPLIED', async () => {
+  const h = harness(), api = apiWith(async () => operation('APPLIED'))
+  api.verify = async () => { throw new HttpError(503) }
+  await runAssignment(api, intent, new AbortController().signal, h.emit, h.wait)
+  expect(h.phases()).not.toContain('confirmed')
+  expect(h.views.at(-1)?.phase).toBe('delayed')
 })

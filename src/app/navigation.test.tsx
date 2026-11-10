@@ -11,14 +11,14 @@ import { usuarioClienteMock, tokenMock } from '../modules/auth/mocks/auth.mock'
 afterEach(cleanup)
 
 async function renderAt(path: string) {
-  const store = new SessionStore({ mode: 'mock', login: async () => tokenMock, me: async () => usuarioClienteMock, register: async () => usuarioClienteMock })
+  const store = new SessionStore({ mode: 'mock', login: async () => tokenMock, me: async () => ({ ...usuarioClienteMock, roles: ['ADMIN'] }), register: async () => usuarioClienteMock })
   if (path !== '/login') await store.login({ email: 'demo@example.com', password: 'demo' })
   const router = createMemoryRouter(routes, { initialEntries: [path] })
   render(<AuthProvider store={store}><RouterProvider router={router} /></AuthProvider>)
   return router
 }
 
-describe('layout y navegación base', async () => {
+describe('layout y navegación base', () => {
   it('muestra el rótulo de datos provisionales (mock)', async () => {
     await renderAt('/')
     expect(screen.getByRole('status').textContent).toBe(MOCK_LABEL)

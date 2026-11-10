@@ -2,9 +2,12 @@ import { NavLink, Outlet } from 'react-router'
 import { appModules } from '../app/modules'
 import { MockBanner } from '../shared/components/MockBanner'
 import { USE_MOCKS } from '../shared/config/env'
+import { useAuth } from '../modules/auth/session/authContext'
+import { Button } from '../shared/components/Button'
 import styles from './AppLayout.module.css'
 
 export function AppLayout() {
+  const { session, state } = useAuth()
   const menuItems = appModules.filter((item) => item.showInMenu)
 
   return (
@@ -24,9 +27,8 @@ export function AppLayout() {
             </NavLink>
           ))}
         </nav>
-        <NavLink to="/login" className={styles.link}>
-          Ingresar
-        </NavLink>
+        <span>{state.user?.email}</span>
+        <Button variant="secondary" onClick={() => session.logout()}>Cerrar sesión</Button>
       </header>
       <main className={styles.main}>
         <Outlet />

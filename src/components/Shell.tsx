@@ -12,7 +12,7 @@ export function Shell() {
   const {user,hasRole,logout}=useAuth()
   return <div className="app-shell">
     <aside className="sidebar">
-      <div className="brand"><div className="brand-mark">L<span>↗</span></div><div><strong>LogiTrack</strong><small>OPERATIONS HUB</small></div></div>
+      <div className="brand"><img src="/logo-logitrack.png" alt="" className="brand-image"/><div> <strong>LogiTrack</strong><small>OPERATIONS HUB</small></div></div>
       <div className="workspace-chip"><span className="workspace-dot"/> ENTORNO DE DESARROLLO <span className="workspace-chevron">⌄</span></div>
       <p className="sidebar-label">ESPACIO DE TRABAJO</p>
       <nav aria-label="Navegación principal">{nav.filter(n=>hasRole(...n.roles)).map(n=><NavLink key={n.to} to={n.to} end={n.to==='/'} className={({isActive})=>`side-link ${isActive?'side-active':''}`}><span className="side-icon">{n.icon}</span>{n.label}</NavLink>)}</nav>

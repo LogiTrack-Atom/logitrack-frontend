@@ -2,13 +2,14 @@ import { NavLink, Outlet } from 'react-router'
 import { appModules } from '../app/modules'
 import { MockBanner } from '../shared/components/MockBanner'
 import { USE_MOCKS } from '../shared/config/env'
+import { hasAnyRole } from '../modules/auth/permissions'
 import { useAuth } from '../modules/auth/session/authContext'
 import { Button } from '../shared/components/Button'
 import styles from './AppLayout.module.css'
 
 export function AppLayout() {
   const { session, state } = useAuth()
-  const menuItems = appModules.filter((item) => item.showInMenu)
+  const menuItems = appModules.filter((item) => item.showInMenu && hasAnyRole(state.user, item.allowedRoles))
 
   return (
     <div className={styles.shell}>

@@ -1,5 +1,5 @@
 import { API_PREFIX } from '../../../shared/config/api'
-import { request } from '../../../shared/http/httpClient'
+import { integrationBlockedRequest as request } from '../../../shared/http/httpClient'
 import { withMock } from '../../../shared/http/mock'
 import { withQuery } from '../../../shared/http/url'
 import type { Uuid } from '../../../shared/types'

@@ -14,7 +14,7 @@ export interface SessionSnapshot {
   user: Usuario | null
   expiresAt: number | null
   epoch: number
-  reason?: 'logout' | 'expired' | 'failed'
+  reason?: 'logout' | 'expired' | 'failed' | 'unauthorized'
 }
 
 /** Lee exp/sub para el ciclo de vida local; no verifica firmas ni autoriza operaciones. */

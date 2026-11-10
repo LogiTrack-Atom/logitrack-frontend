@@ -1,83 +1,102 @@
-# logitrack-frontend
+# LogiTrack — Sprint 04 · Issue #6 (S04-08 Módulo Courier)
 
-Cliente web de LogiTrack Atom: gestión de envíos, repartidores y acceso por roles mediante API Gateway.
+**Entrega local independiente, sin cambios en GitHub.** Implementa la issue
+[LogiTrack-Atom/logitrack-frontend#6](https://github.com/LogiTrack-Atom/logitrack-frontend/issues/6)
+y contiene una versión ejecutable de React 19 + TypeScript + Vite con el módulo Courier integrado.
 
-> **Estado: base del frontend (S04-02).** Todo funciona con **datos provisionales (mock)**. No hay
-> integración real con el backend ni sesión de usuario. Ver [Estado y límites](#estado-y-límites).
+## Estado de dependencias consultadas el 09/11/2026
 
-## Requisitos
+| Dependencia | Estado observado | Cómo se trata en esta entrega |
+| --- | --- | --- |
+| [Shipment #71 — S04-01 contratos](https://github.com/LogiTrack-Atom/shipment-service/issues/71) | Abierta | Rutas y DTO tomados del `courier-service@develop` como baseline **provisional**. No se inventan cambios backend ni se declara contrato aprobado. |
+| [Frontend #1 — S04-02 base React](https://github.com/LogiTrack-Atom/logitrack-frontend/issues/1) | Abierta | React + TS + Vite, router, layout, componentes y placeholders incluídos de manera autocontenida. **No es un merge** de la futura rama del responsable. |
+| [Frontend #3 — S04-04 JWT](https://github.com/LogiTrack-Atom/logitrack-frontend/issues/3) | Abierta | Adaptador AuthProvider propio: token **solo memoria**, login/me y guard de rol. Debe conciliarse con el código aprobado por el responsable. |
+| [Frontend #4 — S04-05 HTTP/roles](https://github.com/LogiTrack-Atom/logitrack-frontend/issues/4) | Abierta | Axios al Gateway, 401/403, errores legibles y aborto/invalidación por sesión. Debe conciliarse con la implementación definitiva. |
 
-- Node `^20.19.0 || >=22.12.0` (declarado en `engines` de `package.json`).
-- npm. Probado con npm 10.8.2.
+Al consultar el repositorio remoto Frontend solo existía la rama `main` con un README (árbol `973e697672295b05b6c583530f900c90ca323a90`). Por eso **no se presupone que las dependencias estén integradas**. Esta carpeta no realiza commits ni PR.
 
-## Instalación y scripts
+## Alcance S04-08 implementado
 
-```bash
-npm ci          # instala exactamente lo que dice package-lock.json
-npm run dev     # servidor de desarrollo
-npm run build   # tsc -b && vite build
-npm run lint    # ESLint
-npm test        # Vitest (pruebas de humo, entorno jsdom)
-npm run preview # sirve el build local
+- **ADMIN:** `GET /api/v1/repartidores` con `?estado=ACTIVO|INACTIVO`, vacío/cargando/error, alta `POST`, detalle `GET /{id}`, edición `PUT /{id}`, cambio `PATCH /{id}/estado`, disponibilidad `GET /{id}/disponibilidad`.
+- **REPARTIDOR:** consulta individual por UUID **solo lectura**; nunca usa la lista general. No infiere un UUID de dominio desde el `sub` de Security. La pertenencia **se valida en el backend** (`@repartidorAccess.puedeConsultar`).
+- **CLIENTE:** no aparece la navegación y el guard rechaza `/courier` y `/courier/:id`. Las restricciones de UI **no sustituyen** la autorización backend.
+- **Sin DELETE:** el backend no expone eliminación de repartidores. El estado se cambia explícitamente a ACTIVO/INACTIVO.
+- El adaptador valida los DTOs al recibirlos, inclusive la coherencia `disponible === (estado === 'ACTIVO')` y el UUID consultado.
+- Tras `POST 201`, `PUT 200` o `PATCH 200` hace **GET de comprobación**. Una escritura con `202` o con comunicación incierta **no muestra éxito** ni reintenta automáticamente; ofrece reconciliación.
+- Los mensajes de error se centralizan para 400/401/403/404/409/422/429/502/503, sin exponer claves ni trazas.
+- Token solo en memoria, nunca en localStorage/sessionStorage ni cookies. Las sesiones anteriores se invalidan al salir; una recarga exige login.
+
+## Contrato REAL observado en Courier `develop`
+
+Rama consultada: `develop`, árbol Git `003003d619d0479bc0577d839a580e61e51a8f0b`.
+Archivos de referencia:
+- [`RepartidorController.java`](https://github.com/LogiTrack-Atom/courier-service/blob/develop/src/main/java/com/logitrack_atom/courier_service/controller/RepartidorController.java)
+- [`SecurityConfig.java`](https://github.com/LogiTrack-Atom/courier-service/blob/develop/src/main/java/com/logitrack_atom/courier_service/config/SecurityConfig.java)
+- [`RepartidorAccess.java`](https://github.com/LogiTrack-Atom/courier-service/blob/develop/src/main/java/com/logitrack_atom/courier_service/security/RepartidorAccess.java)
+- [`RepartidorRequest.java`](https://github.com/LogiTrack-Atom/courier-service/blob/develop/src/main/java/com/logitrack_atom/courier_service/dto/request/RepartidorRequest.java)
+- [`RepartidorResponse.java`](https://github.com/LogiTrack-Atom/courier-service/blob/develop/src/main/java/com/logitrack_atom/courier_service/dto/response/RepartidorResponse.java)
+- [`DisponibilidadRepartidorResponse.java`](https://github.com/LogiTrack-Atom/courier-service/blob/develop/src/main/java/com/logitrack_atom/courier_service/dto/response/DisponibilidadRepartidorResponse.java)
+
+Prefijo de ruta a través del Gateway **local**: `/applications/apicourier/api/v1/repartidores` (`StripPrefix=2`). Nunca enviar JWT directamente a URLs externas o direcciones internas de contenedores desde el navegador.
+
+| Método / ruta dentro del servicio | Rol autorizado | JSON |
+| --- | --- | --- |
+| GET `/api/v1/repartidores?estado=ACTIVO` | ADMIN | `RepartidorResponse[]` |
+| POST `/api/v1/repartidores` | ADMIN | `{ "nombre": "...", "tipoVehiculo": "..." }` → 201 |
+| GET `/api/v1/repartidores/{id}` | ADMIN y REPARTIDOR propietario | `RepartidorResponse` |
+| PUT `/api/v1/repartidores/{id}` | ADMIN | `{ "nombre": "...", "tipoVehiculo": "..." }` |
+| PATCH `/api/v1/repartidores/{id}/estado` | ADMIN | `{ "estado": "INACTIVO" }` |
+| GET `/api/v1/repartidores/{id}/disponibilidad` | ADMIN y REPARTIDOR propietario | `{ "repartidorId": "UUID", "estado": "ACTIVO", "disponible": true }` |
+
+**No existe `/repartidores/me`:** el repartidor autenticado debe ingresar el UUID de su ficha proporcionado por un ADMIN. No se realiza un listado ni búsqueda indiscriminada para encontrarlo. El backend verifica el vínculo `usuarioId` (JWT `sub`) con la identidad Courier correspondiente.
+
+## Ejecutar en Windows / IntelliJ
+
+```powershell
+cd C:\Users\Dell\IdeaProjects\logitrack-atom\logitrack-frontend-s04-08
+npm install
+npm run dev
 ```
 
-Usar `npm ci` en un clon limpio. Las versiones de las herramientas están en `package.json`.
-Vitest, jsdom y Testing Library están fijados en versiones exactas: las últimas versiones de
-Vitest y jsdom exigen Node 22 o superior, y esta base se probó con Node 20.19.
+Abrir **http://127.0.0.1:5173**. Para login y datos reales, levantar Gateway, Security, Eureka, Courier y Config Server; desde la SPA, Vite reenvía `/applications/**` al Gateway `http://127.0.0.1:8066` usando el proxy en `vite.config.ts`. Para cambiar el destino, configurar `LOGITRACK_GATEWAY_DEV_TARGET` en el proceso de Vite. La variable `.env` `VITE_API_BASE_URL=/` mantiene requests de mismo origen.
 
-> Nota: con npm 10.8.2, agregar Vitest con `npm install` falló por un error interno de npm al
-> resolver sus dependencias peer, y se instaló con `--legacy-peer-deps`. `npm ci` sobre el
-> lockfile actual funciona sin ningún flag.
+**Nota:** el `package-lock.json` se debe generar en la máquina con acceso a npm. No incluir secretos, tokens ni claves en `.env`, documentos, screenshots ni commits. El paquete no incluye node_modules.
 
-## Variables de entorno
+## Verificación reproducible
 
-Plantilla en `.env.example`. Las variables `VITE_*` son públicas: no poner secretos.
-
-| Variable | Valor por defecto | Descripción |
-|---|---|---|
-| `VITE_API_BASE_URL` | vacío (mismo origen) | Base de las llamadas al backend. |
-| `VITE_USE_MOCKS` | `true` | Los mocks quedan activos salvo que valga exactamente `false`. |
-
-## Estructura
-
-```
-src/
-  app/        App, router, registro de módulos (modules.tsx) y página 404
-  layouts/    AppLayout: cabecera, menú generado del registro, banner de mocks
-  modules/    un módulo autónomo por carpeta (home, auth, couriers, shipments)
-    <modulo>/types.ts      modelos
-    <modulo>/mocks/        datos provisionales
-    <modulo>/services/     funciones que llaman al backend vía withMock
-  shared/
-    components/  Button, PageHeader, MockBanner, PagePlaceholder
-    config/      env.ts (variables) y api.ts (prefijos de rutas)
-    http/        httpClient (request), httpError, mock (withMock), url (withQuery)
-    styles/      tokens.css y global.css
+```powershell
+npm install
+npm run typecheck
+npm test
+npm run build
+npx playwright install chromium
+npx playwright test e2e/courier.spec.ts
 ```
 
-## Convenciones
+Una vez generado el lockfile, verificar desde copia limpia con `npm ci`. Pruebas incluidas:
+- `tests/courier.contract.test.ts`: DTO, disponibilidad y matriz ADMIN/CLIENTE/REPARTIDOR.
+- `tests/courier.operations.test.ts`: confirmación GET, 202 pendiente, corte de red sin duplicar, PUT/PATCH y 409.
+- `e2e/courier.spec.ts`: mocks etiquetados para roles, filtro, disponibilidad, PATCH y rechazo de otro recurso.
+- `e2e/auth.spec.ts`: flujo JWT y guards heredado de la versión local.
 
-- Cada carpeta de `src/modules` es autónoma y los módulos no se importan entre sí. Para sumar un
-  módulo: crear la carpeta y agregar **una entrada** en `src/app/modules.tsx`; el router y el menú
-  salen de esa lista. Detalle en `src/modules/README.md`.
-- Todo acceso al backend pasa por `withMock(datosMock, () => request<T>(ruta))`. Con los mocks
-  activos no se hace ninguna llamada real.
-- Las pantallas con datos mock se rotulan con `<MockBanner />` (el layout lo muestra globalmente).
-- Estilos con CSS Modules y variables de `tokens.css`, sin librería de UI.
-- TypeScript con `verbatimModuleSyntax` y `erasableSyntaxOnly`: usar `import type` para tipos y no
-  usar enums ni parameter properties (por eso los estados son uniones de literales).
-- Las pruebas viven junto al código (`*.test.ts` / `*.test.tsx`) y se importan desde `vitest`.
+Estos tests con **mocks no son evidencia de integración real**. Para la aceptación definitiva hay que documentar un ensayo en Postman/navegador contra los microservicios y comprobar el usuario real asociado, cambios persistidos y 403 del backend. También faltan las aprobaciones y merges de las cuatro dependencias y la conciliación con sus implementaciones finales.
 
-## Estado y límites
+## Puntos de integración para el equipo
 
-- **Sin integración real:** ningún servicio llama al backend mientras `VITE_USE_MOCKS` no sea `false`.
-- **Contratos en borrador:** los tipos, rutas y mocks salen del borrador de contratos del frontend
-  (`docs/sprint04/contratos-frontend/` en `shipment-service`, rama `feature/71-contratos-frontend`),
-  pendiente de aprobación e integración. Los prefijos de ruta están en `src/shared/config/api.ts`.
-  Esta base no acredita contrato definitivo ni integración: eso lo validan S04-01 y S04-04 a S04-12.
-- **Sin sesión:** no hay login real, almacenamiento de token, interceptor `Authorization`, guards ni
-  manejo de 401/403 (corresponde a S04-04). Las páginas de cada módulo son placeholders.
-- **Sin proxy ni Docker:** el proxy de Vite hacia el gateway y el Dockerfile con nginx quedan
-  pendientes y fuera de esta base.
-- **Pruebas:** son de humo (layout, navegación, rótulo de mocks y servicios sin red). Se probó solo
-  en Windows 10 con Node 20.19.0 y npm 10.8.2.
+Si otros compañeros ya tienen la base S04-02/S04-04/S04-05 en su branch, aplicar solo estos puntos a **una copia local**:
+
+1. Reutilizar `src/features/courier/contract.ts` y `operations.ts` (código aislado de React).
+2. Adaptar `src/api/services.ts` para que `courierApi` use el cliente HTTP y autenticación central aprobados.
+3. Adaptar `src/pages/Couriers.tsx` y `CourierDetail.tsx` a los componentes de la base del equipo.
+4. Registrar `/courier` y `/courier/:id` con guard para `ADMIN`/`REPARTIDOR`, nunca `CLIENTE`.
+5. Reejecutar las pruebas con el `develop` y contratos finalmente acordados.
+
+La implementación de S04-08 no presupone permiso de modificación de los repositorios remotos. No crear rama, commit, push ni PR desde este paquete sin coordinación del equipo.
+
+## Evidencia producida y límites
+
+- Consulta del código real de Courier `develop` por GitHub el 09/11/2026.
+- Revisión de issue #6 y las cuatro dependencias (todas abiertas en el momento de consulta).
+- Validación sintáctica de TS/TSX realizada en este entorno mediante el compilador TypeScript disponible (no equivale a `tsc -b`).
+- **No fue posible ejecutar npm install, typecheck, vitest, Playwright ni build** aquí porque DNS de `registry.npmjs.org` devolvió `EAI_AGAIN`. Deben ejecutarse en Windows/IntelliJ y guardar consola y versión de Node/npm como evidencia.
+- No se desplegó la aplicación ni se probó contra un servidor real desde este entorno.

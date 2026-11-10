@@ -1,18 +1,20 @@
-import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
 
-// Destino del Gateway solo para `npm run dev`; no entra al bundle.
-const gateway = process.env.DEV_GATEWAY_URL ?? 'http://localhost:8066'
-
-// https://vite.dev/config/
+// El navegador solo llama al origen Vite; el dev proxy reenvía al Gateway.
 export default defineConfig({
   plugins: [react()],
   server: {
-    // Conserva /applications/... íntegro: el Gateway quita sus dos primeros segmentos.
-    proxy: { '/applications': { target: gateway } },
+    host: '127.0.0.1',
+    port: 5173,
+    strictPort: true,
+    proxy: {
+      '/applications': {
+        target: process.env.LOGITRACK_GATEWAY_DEV_TARGET || 'http://127.0.0.1:8066',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
-  test: {
-    environment: 'jsdom',
-    include: ['src/**/*.test.{ts,tsx}'],
-  },
+  test: { environment: 'node', include: ['tests/**/*.test.ts'] },
 })

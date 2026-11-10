@@ -1,0 +1,26 @@
+# Overlay independiente: NO modifica el Compose original de Sprint03.
+# Reutiliza la red del proyecto logitrack-sprint03 ya iniciado.
+services:
+  logitrack-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: /
+    image: logitrack/frontend:sprint04-local
+    environment:
+      GATEWAY_UPSTREAM: http://api-gateway:8066
+    ports:
+      - '127.0.0.1:8088:8080'
+    restart: unless-stopped
+    networks:
+      - logitrack
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/healthz"]
+      interval: 20s
+      timeout: 3s
+      retries: 3
+networks:
+  logitrack:
+    external: true
+    name: logitrack-sprint03_logitrack-net

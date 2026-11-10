@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Button } from '../../shared/components/Button'
 import { RequestErrorNotice } from '../../shared/components/RequestErrorNotice'
 import { HttpError, RequestError } from '../../shared/http/httpError'
-import { USE_MOCKS } from '../../shared/config/env'
+import { ASYNC_ASSIGNMENT, USE_MOCKS } from '../../shared/config/env'
+import { AssignmentPanel } from './AssignmentPanel'
 import { useAuth } from '../auth/session/authContext'
 import { DEMO_COURIER_ID } from './mocks/shipmentServer'
 import { isUuid } from './validation'
@@ -102,6 +103,7 @@ export function ShipmentDetail({ service, selection, onChanged }: { service: Shi
         {!admin && !repartidor && <p>Tu perfil permite consultar este envío.</p>}
         {['ENTREGADO', 'CANCELADO'].includes(envio.estado) && <p>Estado terminal: no hay transiciones disponibles.</p>}
       </fieldset>
+      {admin && envio.estado === 'PENDIENTE' && ASYNC_ASSIGNMENT && !USE_MOCKS && <AssignmentPanel key={envio.id} service={service} envioId={envio.id} onSettled={onChanged} />}
     </>}
   </section>
 }

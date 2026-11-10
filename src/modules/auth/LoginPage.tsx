@@ -10,7 +10,7 @@ import styles from './LoginPage.module.css'
 /** Solo admite destinos internos conocidos; nunca refleja tokens/query strings en la URL. */
 function returnPath(state: unknown): string {
   if (typeof state !== 'object' || state === null || !('returnTo' in state)) return '/'
-  return ['/shipments', '/couriers'].includes(String(state.returnTo)) ? String(state.returnTo) : '/'
+  return ['/shipments', '/couriers', '/admin'].includes(String(state.returnTo)) ? String(state.returnTo) : '/'
 }
 
 /** Login y registro público CLIENTE. La contraseña permanece únicamente en el formulario. */

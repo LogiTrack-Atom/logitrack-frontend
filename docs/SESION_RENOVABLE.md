@@ -33,7 +33,7 @@ Si no se confirma la red, se muestra un aviso: no se afirma logout remoto exitos
 operación. Recargar puede renovar mientras la familia sea válida. No se promete
 revocación instantánea de un Bearer copiado. Exp de UI no incorpora skew del backend.
 
-Validación: 195 pruebas Vitest, lint y build; pruebas específicas de restauración
+Validación: 196 pruebas Vitest, lint y build; pruebas específicas de restauración
 única, respuesta tardía, logout fallido, marcador sin secretos, orden login/logout y
 cierre de otra pestaña. Navegador real por Nginx: login, recarga autenticada, logout
 y recarga anónima. API real de renovación: 11 solicitudes / 17 aserciones. La regresión

@@ -3,7 +3,7 @@ import { browserLogin, browserLogout, browserRestore, LOGOUT_PENDING } from './b
 
 const credentials = { email: 'fixture@example.test', password: 'SoloPrueba-2026!' }
 const token = { accessToken: 'fixture', tokenType: 'Bearer', expiresIn: 900 }
-afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); window.localStorage.clear() })
+afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); window.localStorage.clear() })
 
 describe('renovación del navegador', () => {
   it('login y refresh usan cookies solo en rutas de sesión, con cabecera CSRF y sin persistir tokens', async () => {
@@ -52,4 +52,16 @@ describe('renovación del navegador', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(2)
     expect(window.localStorage.length).toBe(0)
   })
+  it('aun sin almacenamiento intenta logout y no restaura silenciosamente la cookie', async () => {
+    vi.resetModules()
+    const { browserLogout: finish, browserRestore: restore } = await import('./browserSessionClient')
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('sin almacenamiento') })
+    const fetchSpy = vi.fn(async () => new Response(null, { status: 204 }))
+    vi.stubGlobal('fetch', fetchSpy)
+    await finish()
+    await expect(restore(new AbortController().signal)).rejects.toMatchObject({ status: 401 })
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
+    expect(fetchSpy.mock.calls.every(call => String((call as unknown[])[0]).endsWith('/logout'))).toBe(true)
+  })
+
 })

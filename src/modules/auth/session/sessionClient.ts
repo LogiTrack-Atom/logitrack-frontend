@@ -1,7 +1,8 @@
 import { API_PREFIX } from '../../../shared/config/api'
 import { USE_MOCKS } from '../../../shared/config/env'
 import { request } from '../../../shared/http/httpClient'
-import { mockPersonaForEmail, mockPersonaForToken, mockToken } from '../mocks/personas'
+import { mockPersonaForEmail, mockPersonaForToken } from '../mocks/personas'
+import { mockUserToken } from '../mocks/identityDirectory'
 import { tokenMock, usuarioClienteMock } from '../mocks/auth.mock'
 import type { Token, Usuario } from '../types'
 import type { AuthTransport } from './session'
@@ -33,7 +34,7 @@ function demo<T>(data: T, signal: AbortSignal): Promise<T> {
 
 const mockTransport: AuthTransport = {
   mode: 'mock',
-  login: (data, signal) => demo({ ...tokenMock, accessToken: mockToken(mockPersonaForEmail(data.email).roles[0]) }, signal),
+  login: (data, signal) => demo({ ...tokenMock, accessToken: mockUserToken(mockPersonaForEmail(data.email)) }, signal),
   me: (token, signal) => {
     const user = mockPersonaForToken(token)
     return user ? demo(user, signal) : Promise.reject(new Error('Perfil simulado no válido.'))

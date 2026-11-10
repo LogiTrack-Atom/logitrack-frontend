@@ -1,5 +1,5 @@
 import { API_PREFIX } from '../../../shared/config/api'
-import { request } from '../../../shared/http/httpClient'
+import { integrationBlockedRequest as request } from '../../../shared/http/httpClient'
 import { withMock } from '../../../shared/http/mock'
 import type { Uuid } from '../../../shared/types'
 import { tokenMock, usuarioClienteMock } from '../mocks/auth.mock'
@@ -13,8 +13,8 @@ import type {
 
 /**
  * PROVISIONAL: rutas y modelos del borrador de contratos (shipment-service#71).
- * Solo expone las llamadas; el almacenamiento del token, el interceptor Bearer y los
- * guards corresponden a S04-04. Nunca registrar credenciales ni tokens en logs.
+ * Fachada de mocks heredada. Las pantallas privadas usarán useHttpClient (#4);
+ * el login activo usa AuthProvider (#3). La red permanece bloqueada antes de G0. Nunca registrar credenciales ni tokens en logs.
  */
 const BASE = API_PREFIX.security
 

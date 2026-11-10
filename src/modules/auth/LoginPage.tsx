@@ -57,6 +57,7 @@ export function LoginPage({ register = false }: { register?: boolean }) {
         {USE_MOCKS && <p>Demostración CLIENTE: no se valida una contraseña real ni se crea una cuenta en el servidor. El perfil simulado es cliente@example.com.</p>}
         <p>La sesión se conserva al navegar. Al recargar, tendrás que ingresar nuevamente.</p>
         {state.reason === 'expired' && <p role="alert">Tu sesión venció. Ingresá nuevamente.</p>}
+        {state.reason === 'unauthorized' && <p role="alert">La sesión terminó porque el servicio rechazó el acceso. Ingresá nuevamente.</p>}
         {error && <p role="alert">{error}</p>}
         {registered && <p role="status">Registro simulado completado. Podés iniciar sesión.</p>}
         <form onSubmit={submit} className={styles.form} aria-busy={busy}>

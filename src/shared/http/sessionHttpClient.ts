@@ -9,9 +9,10 @@ import type { HttpClient, HttpRequest, RequestOptions } from './httpClient'
  * Un 401/403 vigente limpia una sola vez. Respuestas de otra sesión quedan canceladas.
  * El transporte predeterminado permanece bloqueado hasta G0; las pruebas inyectan un fake.
  */
-export function createSessionHttpClient(session: SessionStore, send: HttpRequest = integrationBlockedRequest): HttpClient {
+export function createSessionHttpClient(session: SessionStore, send: HttpRequest = integrationBlockedRequest, clientEpoch = session.getSnapshot().epoch): HttpClient {
   return {
     request: async <T>(path: string, options: RequestOptions = {}) => {
+      if (session.getSnapshot().epoch !== clientEpoch) throw new DOMException('Cliente de otra sesión.', 'AbortError')
       gatewayUrl(path)
       if (Object.keys(options.headers ?? {}).some((key) => key.toLowerCase() === 'authorization')) {
         return Promise.reject(new RequestError('destination'))

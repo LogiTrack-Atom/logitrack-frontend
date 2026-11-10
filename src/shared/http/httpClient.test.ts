@@ -104,4 +104,12 @@ describe('respuestas y errores seguros', () => {
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
+
+  it('conserva status para distinguir una escritura 202 de una confirmada 201', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('{"id":"ficticio"}', { status: 202 })))
+    await expect(request(PATH, { method: 'POST', body: {}, includeStatus: true })).resolves.toEqual({ status: 202, data: { id: 'ficticio' } })
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(null, { status: 204 })))
+    await expect(request(PATH, { includeStatus: true })).resolves.toEqual({ status: 204, data: undefined })
+  })
+
 })

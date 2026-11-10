@@ -17,7 +17,7 @@ interface Row { envio: Envio; ownerId: string; history: HistorialEvento[] }
  * Servidor simulado en memoria de la pestaña. Reutiliza fixtures de Gab y aplica permisos
  * y transiciones antes de mutar. No es persistencia ni aceptación de un backend real.
  */
-export function createShipmentMockRequest(delayMs = 150): HttpRequest {
+export function createShipmentMockRequest(delayMs = 150, courier: { isActive: (id: string) => boolean; isLinkedTo: (userId: string, id: string) => boolean } = { isActive: (id) => id === DEMO_COURIER_ID, isLinkedTo: (userId, id) => userId === COURIER_USER_ID && id === DEMO_COURIER_ID }): HttpRequest {
   const rows = new Map<string, Row>()
   const seed = (id: string, ownerId: string, code: string) => rows.set(id, {
     envio: { ...structuredClone(envioMock), id, codigoSeguimiento: code, repartidorId: null }, ownerId,
@@ -27,7 +27,7 @@ export function createShipmentMockRequest(delayMs = 150): HttpRequest {
   seed('00000000-0000-4000-8000-000000000302', '00000000-0000-4000-8000-000000000004', 'LT-MOCK-AJENO')
   const admin = (user: Usuario) => user.roles.includes('ADMIN')
   const visible = (row: Row, user: Usuario) => admin(user) || (user.roles.includes('CLIENTE') && row.ownerId === user.id)
-    || (user.roles.includes('REPARTIDOR') && user.id === COURIER_USER_ID && row.envio.repartidorId === DEMO_COURIER_ID)
+    || (user.roles.includes('REPARTIDOR') && row.envio.repartidorId !== null && courier.isLinkedTo(user.id, row.envio.repartidorId))
   const fail = (status: number): never => { throw new HttpError(status) }
   const now = () => new Date().toISOString()
 
@@ -73,15 +73,15 @@ export function createShipmentMockRequest(delayMs = 150): HttpRequest {
     const body = options.body as Record<string, unknown> | undefined
     if (method === 'PUT' && segments[1] === 'repartidor') {
       if (!admin(user)) return fail(403)
-      if (row.envio.estado !== 'PENDIENTE' || body?.repartidorId !== DEMO_COURIER_ID) return fail(422)
-      row.envio = { ...row.envio, repartidorId: DEMO_COURIER_ID, updatedAt: now() }
+      if (row.envio.estado !== 'PENDIENTE' || typeof body?.repartidorId !== 'string' || !courier.isActive(body.repartidorId)) return fail(422)
+      row.envio = { ...row.envio, repartidorId: body.repartidorId, updatedAt: now() }
       return row.envio // No cambia estado ni agrega historial.
     }
     if (method === 'PATCH' && ['estado', 'cancelacion'].includes(segments[1])) {
       const target = (segments[1] === 'cancelacion' ? 'CANCELADO' : body?.estado) as EstadoEnvio
       if ((!admin(user) && !user.roles.includes('REPARTIDOR')) || (target === 'CANCELADO' && !admin(user))) return fail(403)
       if (!(row.envio.estado === 'PENDIENTE' && ['EN_RUTA', 'CANCELADO'].includes(target)) && !(row.envio.estado === 'EN_RUTA' && target === 'ENTREGADO')) return fail(422)
-      if (target === 'EN_RUTA' && row.envio.repartidorId !== DEMO_COURIER_ID) return fail(422)
+      if (target === 'EN_RUTA' && (!row.envio.repartidorId || !courier.isActive(row.envio.repartidorId))) return fail(422)
       const date = now()
       row.history.push({ id: crypto.randomUUID(), estadoAnterior: row.envio.estado, estadoNuevo: target, fechaCambio: date })
       row.envio = { ...row.envio, estado: target, updatedAt: date }

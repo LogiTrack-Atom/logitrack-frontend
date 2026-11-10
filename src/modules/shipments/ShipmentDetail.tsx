@@ -87,7 +87,7 @@ export function ShipmentDetail({ service, selection, onChanged }: { service: Shi
         <legend>Acciones del envío</legend>
         {admin && envio.estado === 'PENDIENTE' && <>
           <label>UUID del repartidor<input value={courier} onChange={(event) => setCourier(event.target.value)} /></label>
-          {USE_MOCKS && <small>Repartidor ACTIVO simulado: {DEMO_COURIER_ID}. Disponible no significa reservado.</small>}
+          {USE_MOCKS && <small>Repartidor de demostración: {DEMO_COURIER_ID}. Verificá su estado en Courier; disponible no significa reservado.</small>}
           <Button onClick={() => setAction('assign')}>Asignar repartidor</Button>
           <Button variant="secondary" onClick={() => setAction('cancel')}>Cancelar envío</Button>
         </>}

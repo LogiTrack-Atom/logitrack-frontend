@@ -26,7 +26,7 @@ Pertenencia a un envío, asignación propia de un repartidor y autorización efe
 
 ## Integración pendiente y consumo por módulos
 
-`useHttpClient` crea un cliente privado por SessionStore. Su transporte predeterminado está bloqueado hasta G0; las pruebas inyectan un transporte controlado. Las fachadas mock heredadas de Gab mantienen sus firmas y fixtures, y sus llamadas reales también quedan bloqueadas aunque se desactiven los mocks. Los futuros módulos #5/#6/#7 deberán vincular sus operaciones privadas a este cliente; las fachadas mock solas no demuestran autenticación ni aislamiento de negocio. El adapter Gateway de #3 está preparado pero no activo.
+`useHttpClient` crea un cliente privado por generación de SessionStore; una instancia anterior no inicia requests después de cambiar la identidad. Su transporte predeterminado está bloqueado hasta G0; las pruebas inyectan un transporte controlado. Las fachadas mock heredadas de Gab mantienen sus firmas y fixtures, y sus llamadas reales también quedan bloqueadas aunque se desactiven los mocks. Los futuros módulos #5/#6/#7 deberán vincular sus operaciones privadas a este cliente; las fachadas mock solas no demuestran autenticación ni aislamiento de negocio. El adapter Gateway de #3 está preparado pero no activo.
 
 No se activa la red cambiando una variable de entorno. La habilitación real requerirá resolver G0, contratos y la validación docente de persistencia; después se seleccionará explícitamente el transporte `request` del cliente común y se realizará aceptación de extremo a extremo. No se aceptan ni cierran #3/#4 con esta preparación.
 

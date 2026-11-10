@@ -1,3 +1,4 @@
+import { mockToken } from '../modules/auth/mocks/personas'
 import { afterEach, describe, expect, it } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { RouterProvider, createMemoryRouter } from 'react-router'
@@ -11,7 +12,7 @@ import { usuarioClienteMock, tokenMock } from '../modules/auth/mocks/auth.mock'
 afterEach(cleanup)
 
 async function renderAt(path: string) {
-  const store = new SessionStore({ mode: 'mock', login: async () => tokenMock, me: async () => ({ ...usuarioClienteMock, roles: ['ADMIN'] }), register: async () => usuarioClienteMock })
+  const store = new SessionStore({ mode: 'mock', login: async () => ({ ...tokenMock, accessToken: mockToken('ADMIN') }), me: async () => ({ ...usuarioClienteMock, roles: ['ADMIN'] }), register: async () => usuarioClienteMock })
   if (path !== '/login') await store.login({ email: 'demo@example.com', password: 'demo' })
   const router = createMemoryRouter(routes, { initialEntries: [path] })
   render(<AuthProvider store={store}><RouterProvider router={router} /></AuthProvider>)

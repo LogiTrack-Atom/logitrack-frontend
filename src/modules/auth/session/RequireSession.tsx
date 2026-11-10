@@ -5,6 +5,7 @@ import { useAuth } from './authContext'
 export function RequireSession() {
   const { state } = useAuth()
   const location = useLocation()
+  if (state.status === 'authenticating') return <p role="status">Recuperando sesión…</p>
   if (state.status !== 'authenticated') {
     return <Navigate to="/login" replace state={{ returnTo: location.pathname }} />
   }

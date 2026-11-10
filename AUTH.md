@@ -1,5 +1,7 @@
 # Autenticación y sesión — S04-04
 
+> Actualización de sesión: la decisión del equipo permite recuperar el acceso al recargar mediante cookie HttpOnly de renovación, sin guardar JWT en Web Storage. Ver [sesión renovable](docs/SESION_RENOVABLE.md). Sustituye la política anterior de recarga de esta entrega.
+
 > Estado actualizado en #9: el modo real se habilita con `VITE_USE_MOCKS=false` y se verificó por Gateway. S04-00/G0 está retirado como requisito. Ver [resultados y pendientes vigentes](docs/INTEGRACION.md). Las cantidades de pruebas y ramas descritas abajo corresponden a la entrega original de cada módulo.
 
 Implementación provisional de [frontend#3](https://github.com/LogiTrack-Atom/logitrack-frontend/issues/3), sobre la base React de Gab integrada en `develop` (`d6a59a8`).

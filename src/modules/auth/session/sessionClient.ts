@@ -1,16 +1,19 @@
+import { browserLogin, browserRestore, browserLogout } from './browserSessionClient'
 import { API_PREFIX } from '../../../shared/config/api'
 import { USE_MOCKS } from '../../../shared/config/env'
 import { request } from '../../../shared/http/httpClient'
 import { mockPersonaForEmail, mockPersonaForToken } from '../mocks/personas'
 import { mockUserToken } from '../mocks/identityDirectory'
 import { tokenMock, usuarioClienteMock } from '../mocks/auth.mock'
-import type { Token, Usuario } from '../types'
+import type { Usuario } from '../types'
 import type { AuthTransport } from './session'
 
 /** Adapter de autenticación: solo rutas relativas conocidas del servicio de seguridad. */
 export const gatewayAuthTransport: AuthTransport = {
   mode: 'gateway',
-  login: (body, signal) => request<Token>(`${API_PREFIX.security}/auth/login`, { method: 'POST', body, signal }),
+  login: browserLogin,
+  resume: browserRestore,
+  endSession: browserLogout,
   me: (token, signal) => request<Usuario>(`${API_PREFIX.security}/auth/me`, { headers: { Authorization: `Bearer ${token}` }, signal }),
   register: (body, signal) => request<Usuario>(`${API_PREFIX.security}/auth/register`, { method: 'POST', body, signal }),
 }

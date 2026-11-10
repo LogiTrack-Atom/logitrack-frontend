@@ -1,5 +1,7 @@
 # Integración por Gateway — issue #9
 
+> Actualización de sesión: la decisión del equipo permite recuperar el acceso al recargar mediante cookie HttpOnly de renovación, sin guardar JWT en Web Storage. Ver [sesión renovable](SESION_RENOVABLE.md). Sustituye la política anterior de recarga de esta entrega.
+
 ## Configuración
 
 Por defecto `npm run dev` usa datos ficticios. Para conectar servicios locales:

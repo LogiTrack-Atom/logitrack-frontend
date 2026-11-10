@@ -15,12 +15,14 @@ describe('transporte de autenticación', () => {
     await gatewayAuthTransport.me('valor-sintetico', signal)
     await gatewayAuthTransport.register(data, signal)
     expect(fetchSpy.mock.calls.map((call) => (call as unknown[])[0])).toEqual([
-      `${API_PREFIX.security}/auth/login`, `${API_PREFIX.security}/auth/me`, `${API_PREFIX.security}/auth/register`,
+      `${API_PREFIX.security}/auth/session`, `${API_PREFIX.security}/auth/me`, `${API_PREFIX.security}/auth/register`,
     ])
     const options = fetchSpy.mock.calls.map((call) => (call as unknown[])[1] as RequestInit)
     expect(options.map((option) => option.method)).toEqual(['POST', 'GET', 'POST'])
     expect(options.map((option) => (option.headers as Record<string, string>).Authorization)).toEqual([undefined, 'Bearer valor-sintetico', undefined])
-    expect(options.every((option) => option.signal === signal)).toBe(true)
+    expect(options.slice(1).every((option) => option.signal === signal)).toBe(true)
+    expect(options[0].credentials).toBe('same-origin')
+    expect((options[0].headers as Record<string, string>)['X-LogiTrack-Session']).toBe('1')
     expect(JSON.parse(options[2].body as string)).toEqual(data)
   })
 
@@ -42,6 +44,6 @@ describe('transporte de autenticación', () => {
     const { activeAuthTransport: real, gatewayAuthTransport: adapter } = await import('./sessionClient')
     expect(real).toBe(adapter)
     await real.login({ email: 'demo@example.com', password: 'demo' }, new AbortController().signal)
-    expect(fetchSpy).toHaveBeenCalledWith(`${API_PREFIX.security}/auth/login`, expect.objectContaining({ method: 'POST' }))
+    expect(fetchSpy).toHaveBeenCalledWith(`${API_PREFIX.security}/auth/session`, expect.objectContaining({ method: 'POST' }))
   })
 })

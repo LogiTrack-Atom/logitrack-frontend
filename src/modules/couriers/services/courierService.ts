@@ -1,3 +1,6 @@
+import { parseCourier, parseCourierList, parseAvailability, CourierContractError } from '../contract'
+import { createCourierConfirmed, updateCourierConfirmed, changeCourierStateConfirmed } from '../operations'
+import type { CourierWritePort, CourierWriteResponse } from '../operations'
 import { API_PREFIX } from '../../../shared/config/api'
 import { integrationBlockedRequest as request } from '../../../shared/http/httpClient'
 import { withMock } from '../../../shared/http/mock'
@@ -73,3 +76,28 @@ export function obtenerIdentidad(id: Uuid): Promise<IdentidadRepartidor> {
     request<IdentidadRepartidor>(`${BASE}/${encodeURIComponent(id)}/usuario`),
   )
 }
+
+/** Servicio privado adaptado al contrato de JMatiasF; confirma mutaciones mediante GET. */
+export function createCourierService(client: import('../../../shared/http/httpClient').HttpClient) {
+  const detail = async (id: string, signal?: AbortSignal) => {
+    const row = parseCourier(await client.request(`${BASE}/${encodeURIComponent(id)}`, { signal }))
+    if (row.id.toLowerCase() !== id.toLowerCase()) throw new CourierContractError()
+    return row
+  }
+  const port = (signal?: AbortSignal): CourierWritePort => ({
+    one: (id) => detail(id, signal),
+    create: (nombre, tipoVehiculo) => client.request<CourierWriteResponse>(BASE, { method: 'POST', body: { nombre, tipoVehiculo }, includeStatus: true, signal }),
+    update: (id, nombre, tipoVehiculo) => client.request<CourierWriteResponse>(`${BASE}/${encodeURIComponent(id)}`, { method: 'PUT', body: { nombre, tipoVehiculo }, includeStatus: true, signal }),
+    state: (id, estado) => client.request<CourierWriteResponse>(`${BASE}/${encodeURIComponent(id)}/estado`, { method: 'PATCH', body: { estado }, includeStatus: true, signal }),
+  })
+  return {
+    detail,
+    list: async (estado?: EstadoRepartidor, signal?: AbortSignal) => parseCourierList(await client.request(withQuery(BASE, { estado }), { signal })),
+    availability: async (id: string, signal?: AbortSignal) => parseAvailability(await client.request(`${BASE}/${encodeURIComponent(id)}/disponibilidad`, { signal }), id),
+    create: (body: RepartidorRequest, signal?: AbortSignal) => createCourierConfirmed(port(signal), body),
+    update: (id: string, body: RepartidorRequest, signal?: AbortSignal) => updateCourierConfirmed(port(signal), id, body),
+    changeState: (id: string, estado: EstadoRepartidor, signal?: AbortSignal) => changeCourierStateConfirmed(port(signal), id, estado),
+  }
+}
+
+export type CourierService = ReturnType<typeof createCourierService>

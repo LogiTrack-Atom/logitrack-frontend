@@ -117,6 +117,12 @@ export function createShipmentService(client: import('../../../shared/http/httpC
     assign: (id: string, repartidorId: string, signal?: AbortSignal) => client.request<Envio>(`${BASE}/${encodeURIComponent(id)}/repartidor`, { method: 'PUT', body: { repartidorId }, signal }),
     advance: (id: string, estado: EstadoEnvio, signal?: AbortSignal) => client.request<Envio>(`${BASE}/${encodeURIComponent(id)}/estado`, { method: 'PATCH', body: { estado }, signal }),
     cancel: (id: string, signal?: AbortSignal) => client.request<Envio>(`${BASE}/${encodeURIComponent(id)}/cancelacion`, { method: 'PATCH', signal }),
+    requestAssignment: (id: string, repartidorId: string, idempotencyKey: string, signal?: AbortSignal) =>
+        client.request<{ status: number; data: unknown }>(`${BASE}/${encodeURIComponent(id)}/solicitudes-asignacion`, {
+          method: 'POST', body: { repartidorId }, headers: { 'Idempotency-Key': idempotencyKey }, includeStatus: true, signal,
+        }),
+    assignmentOperation: (operationId: string, signal?: AbortSignal) =>
+        client.request<unknown>(`${API_PREFIX.shipment}/operaciones-asignacion/${encodeURIComponent(operationId)}`, { signal }),
   }
 }
 

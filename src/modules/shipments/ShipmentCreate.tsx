@@ -47,7 +47,7 @@ export function ShipmentCreate({ service, onCreated, onRefresh }: { service: Shi
     }
   }
 
-  return <section className={styles.card} aria-labelledby="create-title">
+  return <section id="nuevo-envio" tabIndex={-1} className={styles.card} aria-labelledby="create-title">
     <h2 id="create-title">Registrar envío</h2>
     <p>Las medidas usan punto decimal. Peso: hasta 7 enteros y 3 decimales; dimensiones: hasta 8 enteros y 2 decimales.</p>
     {validation && <p role="alert">{validation}</p>}

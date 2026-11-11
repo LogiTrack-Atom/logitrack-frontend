@@ -1,11 +1,11 @@
 .workspace { display: grid; gap: var(--space-4); }
-.card { min-width: 0; padding: var(--space-4); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); }
-.card h2 { margin-top: 0; }
+.card { min-width: 0; padding: var(--space-4); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); box-shadow: var(--shadow-card); }
+.card h2 { font-size: 1.1rem; }
 .form, .card fieldset { display: grid; gap: var(--space-3); }
 .form { margin-block: var(--space-3); }
 .card fieldset { min-width: 0; border: 1px solid var(--color-border); border-radius: var(--radius); }
 .card label { display: grid; gap: var(--space-1); }
-.card input, .card select { min-height: 44px; max-width: 100%; padding: var(--space-2); border: 1px solid var(--color-border); border-radius: 4px; font: inherit; color: var(--color-text); background: var(--color-surface); }
+.card input, .card select { min-height: 44px; max-width: 100%; padding: var(--space-2); border: 1px solid #b8c6da; border-radius: 8px; font: inherit; color: var(--color-text); background: var(--color-surface); }
 .card :is(input, select):focus-visible { outline: 3px solid var(--color-primary); outline-offset: 2px; }
 .toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: var(--space-3); margin-block: var(--space-3); }
 .tableScroll { overflow-x: auto; }
@@ -15,3 +15,7 @@
 .details { display: grid; grid-template-columns: minmax(80px, 130px) minmax(0, 1fr); gap: var(--space-2); }
 .details dt { font-weight: 600; }
 .details dd { margin: 0; overflow-wrap: anywhere; }
+
+.card thead { background: #f5f8fd; }
+.courierStatus { display: inline-block; padding: .25rem .6rem; border-radius: 999px; background: #edf1f7; color: #354a65; font-size: .75rem; font-weight: 650; }
+.courierStatus[data-active='true'] { background: #e2f5ed; color: #136347; }

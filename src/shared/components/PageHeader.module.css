@@ -19,3 +19,6 @@
   display: flex;
   gap: var(--space-2);
 }
+
+.text h1 { font-size: clamp(1.65rem, 3vw, 2.25rem); letter-spacing: -.045em; }
+@media (max-width: 520px) { .header { flex-wrap: wrap; } }

@@ -51,16 +51,22 @@ export function LoginPage({ register = false }: { register?: boolean }) {
 
   return (
     <main className={styles.wrapper}>
+      <div className={styles.visual} aria-hidden="true">
+        <img src="/assets/branding/logitrack-isotipo-contraste.webp" width="464" height="424" alt="" />
+      </div>
       <section className={styles.panel} aria-labelledby="auth-title">
+        <img className={styles.brand} src="/assets/branding/logitrack-horizontal.webp" width="520" height="174" alt="LogiTrack Atom" />
         {USE_MOCKS && <MockBanner />}
         <h1 id="auth-title">{register ? 'Crear cuenta de cliente' : 'Iniciar sesión'}</h1>
         {USE_MOCKS && <p>Demostración sin cuentas reales: cliente@example.com, admin@example.com y repartidor@example.com. Usá una contraseña ficticia; no se valida contra un servidor.</p>}
-        <p>{USE_MOCKS ? 'La sesión de demostración se conserva al navegar y se reinicia al recargar.' : 'La sesión se recupera al recargar mientras la renovación siga vigente. El token de acceso permanece en memoria.'}</p>
+        <p className={styles.description}>{USE_MOCKS
+          ? 'La sesión de demostración se reinicia al recargar.'
+          : register ? 'Usá un correo al que tengas acceso.' : 'Ingresá con el correo de tu cuenta.'}</p>
         {state.reason === 'logout-unconfirmed' && <p role="alert">El acceso local terminó, pero no se confirmó el cierre en el servidor. Volvé a conectarte para completar el cierre antes de recargar.</p>}
         {state.reason === 'expired' && <p role="alert">Tu sesión venció. Ingresá nuevamente.</p>}
         {state.reason === 'unauthorized' && <p role="alert">La sesión terminó porque el servicio rechazó el acceso. Ingresá nuevamente.</p>}
         {error && <p role="alert">{error}</p>}
-        {registered && <p role="status">Registro completado. Podés iniciar sesión.</p>}
+        {registered && <p className={styles.success} role="status">Registro completado. Podés iniciar sesión.</p>}
         <form onSubmit={submit} className={styles.form} aria-busy={busy}>
           <label htmlFor="email">Correo electrónico</label>
           <input id="email" type="email" autoComplete="username" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} disabled={busy} />

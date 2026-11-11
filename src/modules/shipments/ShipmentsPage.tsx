@@ -5,6 +5,8 @@ import { RequestErrorNotice } from '../../shared/components/RequestErrorNotice'
 import { useAuth } from '../auth/session/authContext'
 import { Allowed } from '../auth/session/RequireRole'
 import { UI_ROLES } from '../auth/permissions'
+import { PageHeader } from '../../shared/components/PageHeader'
+import { ShipmentStatus } from './ShipmentStatus'
 import { ShipmentCreate } from './ShipmentCreate'
 import { ShipmentDetail } from './ShipmentDetail'
 import type { ShipmentSelection } from './ShipmentDetail'
@@ -49,28 +51,46 @@ export function ShipmentsPage({ service: provided }: { service?: ShipmentService
     setValidation(''); setSelection({ kind, value })
   }
   return <div className={styles.workspace}>
-    <header><h1>Envíos</h1><p>{state.user?.roles.includes('REPARTIDOR') ? 'Panel del repartidor: envíos asignados a tu identidad.' : 'Consultas y operaciones de los envíos permitidos para tu identidad.'}</p></header>
+    <PageHeader
+      title="Envíos"
+      description={state.user?.roles.includes('REPARTIDOR') ? 'Panel del repartidor: envíos asignados a tu identidad.' : 'Consultá, seguí y gestioná tus envíos.'}
+      actions={<Allowed roles={UI_ROLES.createShipment}><a className={styles.createLink} href="#nuevo-envio">Nuevo envío</a></Allowed>}
+    />
     {notice && <p role="status">{notice}</p>}
     <section className={styles.card} aria-labelledby="list-title">
-      <h2 id="list-title">Listado de envíos</h2>
-      <div className={styles.toolbar}>
-        <label>Filtrar por estado<select value={filter} onChange={(event) => { setLoading(true); setError(null); setItems([]); setFilter(event.target.value as EstadoEnvio | '') }}><option value="">Todos</option>{ESTADOS_ENVIO.map((estado) => <option key={estado}>{estado}</option>)}</select></label>
+      <div className={styles.sectionHeader}>
+        <h2 id="list-title">Listado de envíos</h2>
         <Button variant="secondary" onClick={refresh} disabled={loading}>Actualizar listado</Button>
       </div>
-      {loading && <p role="status">Cargando envíos…</p>}
-      {error !== null && <RequestErrorNotice error={error} />}
-      {!loading && !error && items.length === 0 && <p>No hay envíos visibles para el filtro seleccionado.</p>}
-      {!loading && !error && items.length > 0 && <div className={styles.tableScroll}><table>
-        <caption>Envíos visibles para tu sesión</caption>
-        <thead><tr><th>Tracking</th><th>Cliente</th><th>Estado</th><th>Consulta</th></tr></thead>
-        <tbody>{items.map((envio) => <tr key={envio.id}><td>{envio.codigoSeguimiento}</td><td>{envio.cliente.nombre}</td><td>{envio.estado}</td><td><Button variant="secondary" onClick={() => setSelection({ kind: 'id', value: envio.id })}>Ver {envio.codigoSeguimiento}</Button></td></tr>)}</tbody>
-      </table></div>}
-      <form onSubmit={lookup} className={styles.toolbar}>
-        <label>Buscar por<select name="kind"><option value="tracking">Tracking</option><option value="id">UUID</option></select></label>
-        <label>Código o UUID<input name="query" required /></label><Button type="submit">Consultar envío</Button>
-      </form>
+      <div className={styles.listControls}>
+        <label>Filtrar por estado<select value={filter} onChange={(event) => { setLoading(true); setError(null); setItems([]); setFilter(event.target.value as EstadoEnvio | '') }}><option value="">Todos</option>{ESTADOS_ENVIO.map((estado) => <option key={estado}>{estado}</option>)}</select></label>
+        <form onSubmit={lookup} className={styles.lookup}>
+          <label>Buscar por<select name="kind"><option value="tracking">Tracking</option><option value="id">UUID</option></select></label>
+          <label className={styles.query}>Código o UUID<input name="query" required /></label>
+          <Button type="submit">Consultar envío</Button>
+        </form>
+      </div>
       {validation && <p role="alert">{validation}</p>}
-      <p>Conocer un tracking no habilita acceso a un envío ajeno.</p>
+      {loading && <p className={styles.listMessage} role="status">Cargando envíos…</p>}
+      {error !== null && <RequestErrorNotice error={error} />}
+      {!loading && !error && items.length === 0 && <p className={styles.listMessage}>No hay envíos visibles para el filtro seleccionado.</p>}
+      {!loading && !error && items.length > 0 && (
+        <div className={styles.tableScroll} role="region" aria-label="Tabla de envíos" tabIndex={0}>
+          <table aria-labelledby="list-title">
+            <thead><tr><th scope="col">Tracking</th><th scope="col">Recorrido</th><th scope="col">Estado</th><th scope="col">Detalle</th></tr></thead>
+            <tbody>
+              {items.map((envio) => (
+                <tr key={envio.id}>
+                  <td><strong>{envio.codigoSeguimiento}</strong><small>{envio.cliente.nombre}</small></td>
+                  <td>{envio.origen.ciudad} → {envio.destino.ciudad}</td>
+                  <td><ShipmentStatus status={envio.estado} /></td>
+                  <td><Button variant="secondary" aria-label={`Ver ${envio.codigoSeguimiento}`} onClick={() => setSelection({ kind: 'id', value: envio.id })}>Ver</Button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
     {selection && <ShipmentDetail key={`${selection.kind}:${selection.value}:${detailRevision}`} service={service} selection={selection} onChanged={refreshAll} onListChanged={refresh} />}
     <Allowed roles={UI_ROLES.createShipment}><ShipmentCreate service={service} onRefresh={refresh} onCreated={(envio) => {

@@ -11,8 +11,8 @@ import { usuarioClienteMock, tokenMock } from '../modules/auth/mocks/auth.mock'
 
 afterEach(cleanup)
 
-async function renderAt(path: string) {
-  const store = new SessionStore({ mode: 'mock', login: async () => ({ ...tokenMock, accessToken: mockToken('ADMIN') }), me: async () => ({ ...usuarioClienteMock, roles: ['ADMIN'] }), register: async () => usuarioClienteMock })
+async function renderAt(path: string, role: 'ADMIN' | 'CLIENTE' = 'ADMIN') {
+  const store = new SessionStore({ mode: 'mock', login: async () => ({ ...tokenMock, accessToken: mockToken(role) }), me: async () => ({ ...usuarioClienteMock, roles: [role] }), register: async () => usuarioClienteMock })
   if (path !== '/login') await store.login({ email: 'demo@example.com', password: 'demo' })
   const router = createMemoryRouter(routes, { initialEntries: [path] })
   render(<AuthProvider store={store}><RouterProvider router={router} /></AuthProvider>)
@@ -22,7 +22,17 @@ async function renderAt(path: string) {
 describe('layout y navegación base', () => {
   it('muestra el rótulo de datos provisionales (mock)', async () => {
     await renderAt('/')
-    expect(screen.getByRole('status').textContent).toBe(MOCK_LABEL)
+    expect(screen.getByText(MOCK_LABEL).getAttribute('role')).toBe('status')
+  })
+
+  it('resume únicamente los envíos visibles para la cuenta autenticada', async () => {
+    await renderAt('/', 'CLIENTE')
+    const recent = screen.getByRole('region', { name: 'Envíos recientes' })
+    expect(await within(recent).findByText('LT-MOCK-0001')).toBeTruthy()
+    expect(within(recent).queryByText('LT-MOCK-AJENO')).toBeNull()
+    const summary = screen.getByRole('region', { name: 'Resumen de envíos' })
+    const visibleMetric = within(summary).getByRole('heading', { name: 'Envíos visibles' }).parentElement!
+    expect(within(visibleMetric).getByText('1', { exact: true })).toBeTruthy()
   })
 
   it('el menú tiene un enlace por cada módulo visible', async () => {

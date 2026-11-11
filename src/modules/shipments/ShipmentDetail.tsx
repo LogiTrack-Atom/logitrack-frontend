@@ -3,6 +3,7 @@ import { Button } from '../../shared/components/Button'
 import { RequestErrorNotice } from '../../shared/components/RequestErrorNotice'
 import { HttpError, RequestError } from '../../shared/http/httpError'
 import { ASYNC_ASSIGNMENT, USE_MOCKS } from '../../shared/config/env'
+import { ShipmentStatus } from './ShipmentStatus'
 import { AssignmentPanel } from './AssignmentPanel'
 import { useAuth } from '../auth/session/authContext'
 import { DEMO_COURIER_ID } from './mocks/shipmentServer'
@@ -13,6 +14,12 @@ import styles from './ShipmentsPage.module.css'
 
 export interface ShipmentSelection { kind: 'id' | 'tracking'; value: string }
 type Action = 'assign' | 'advance' | 'cancel'
+const eventDate = new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' })
+
+function formatEventDate(value: string) {
+  const date = Date.parse(value)
+  return Number.isNaN(date) ? value : eventDate.format(date)
+}
 
 /** Detalle confirmado y comandos explícitos, sin cambios optimistas ni reintentos automáticos. */
 export function ShipmentDetail({ service, selection, onChanged, onListChanged }: { service: ShipmentService; selection: ShipmentSelection; onChanged: () => void; onListChanged: () => void }) {
@@ -66,12 +73,14 @@ export function ShipmentDetail({ service, selection, onChanged, onListChanged }:
   const repartidor = state.user?.roles.includes('REPARTIDOR') ?? false
   const envio = data?.envio
   return <section className={styles.card} aria-labelledby="detail-title">
-    <h2 id="detail-title">Detalle e historial</h2>
+    <div className={styles.sectionHeader}>
+      <h2 id="detail-title">Detalle e historial</h2>
+      <Button variant="secondary" disabled={busy || loading} onClick={onChanged}>Actualizar detalle</Button>
+    </div>
     {loading && <p role="status">Cargando detalle…</p>}
     {error !== null && <RequestErrorNotice error={error} />}
     {validation && <p role="alert">{validation}</p>}
     {uncertain && <p role="alert">Resultado no confirmado. Actualizá el detalle y verificá el estado antes de decidir otra operación.</p>}
-    <Button variant="secondary" disabled={busy || loading} onClick={onChanged}>Actualizar detalle</Button>
     {envio && <>
       <dl className={styles.details}>
         <dt>UUID</dt><dd>{envio.id}</dd><dt>Tracking</dt><dd>{envio.codigoSeguimiento}</dd>
@@ -83,8 +92,16 @@ export function ShipmentDetail({ service, selection, onChanged, onListChanged }:
         <dt>Medidas</dt><dd>{envio.pesoKg} kg; {envio.anchoCm} × {envio.altoCm} × {envio.largoCm} cm</dd>
       </dl>
       <h3>Historial</h3>
-      <ol aria-label="Historial de estados">{data.history.map((event) => <li key={event.id}>{event.estadoAnterior ?? 'Inicio'} → {event.estadoNuevo} — <time dateTime={event.fechaCambio}>{event.fechaCambio}</time></li>)}</ol>
-      <p>Las acciones disponibles no sustituyen la autorización y pertenencia verificadas por el servicio.</p>
+      {data.history.length === 0 && <p className={styles.listMessage}>Todavía no hay eventos registrados.</p>}
+      <ol aria-label="Historial de estados" className={styles.timeline}>
+        {data.history.map((event) => (
+          <li key={event.id}>
+            {event.estadoAnterior && <><ShipmentStatus status={event.estadoAnterior} /> <span aria-hidden="true">→</span>{' '}</>}
+            <ShipmentStatus status={event.estadoNuevo} />
+            <time dateTime={event.fechaCambio}>{formatEventDate(event.fechaCambio)}</time>
+          </li>
+        ))}
+      </ol>
       <fieldset disabled={busy || uncertain || loading} className={styles.actions}>
         <legend>Acciones del envío</legend>
         {admin && envio.estado === 'PENDIENTE' && <>

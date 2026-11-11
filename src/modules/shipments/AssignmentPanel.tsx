@@ -47,10 +47,10 @@ export function AssignmentPanel({ service, envioId, onSettled, onVerified }: { s
   }
 
   return (
-    <section aria-labelledby="async-assign-title">
+    <section className={styles.assignment} aria-labelledby="async-assign-title">
       <h3 id="async-assign-title">Asignación asíncrona</h3>
       <p>La solicitud se acepta primero y se confirma después. Que el repartidor figure disponible no significa que quede reservado.</p>
-      <div className={styles.actions}>
+      <div className={styles.toolbar}>
         <label>
           UUID del repartidor
           <input value={courier} disabled={locked} onChange={(event) => setCourier(event.target.value)} />
@@ -60,7 +60,7 @@ export function AssignmentPanel({ service, envioId, onSettled, onVerified }: { s
         </Button>
       </div>
       {validation && <p role="alert">{validation}</p>}
-      <div role="status" aria-live="polite">
+      <div className={styles.assignmentStatus} data-phase={view.phase} role="status" aria-live="polite">
         {view.phase === 'requesting' && <p>Enviando la solicitud…</p>}
         {view.phase === 'requested' && (
           <p>Solicitado (operación {view.operation.operationId}): todavía no hay asignación. Consultando el resultado…</p>

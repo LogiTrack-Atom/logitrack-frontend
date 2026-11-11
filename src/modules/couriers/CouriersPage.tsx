@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import { PageHeader } from '../../shared/components/PageHeader'
 import { Button } from '../../shared/components/Button'
 import { RequestErrorNotice } from '../../shared/components/RequestErrorNotice'
 import { useAuth } from '../auth/session/authContext'
@@ -69,7 +70,7 @@ export function CouriersPage({ service: provided }: { service?: CourierService }
   }
   if (!allowed) return <section><h1>Acceso no permitido</h1><p>Tu perfil no puede consultar Courier.</p></section>
   return <div className={styles.workspace}>
-    <header><h1>Repartidores</h1><p>{admin ? 'Directorio, altas y estados operativos.' : 'Consultá solamente tu ficha vinculada. El UUID de usuario y el de repartidor son distintos.'}</p></header>
+    <PageHeader title="Repartidores" description={admin ? 'Gestioná el directorio y los estados operativos.' : 'Consultá tu ficha vinculada de repartidor.'} />
     {validation && <p role="alert">{validation}</p>}
     {admin && <section className={styles.card} aria-labelledby="courier-list-title">
       <h2 id="courier-list-title">Directorio de repartidores</h2>
@@ -82,7 +83,7 @@ export function CouriersPage({ service: provided }: { service?: CourierService }
       {!loading && listError === null && items.length === 0 && <p>No hay repartidores para el filtro seleccionado.</p>}
       {!loading && listError === null && items.length > 0 && <div className={styles.tableScroll}><table>
         <caption>Repartidores del directorio</caption><thead><tr><th>Nombre</th><th>Vehículo</th><th>Estado</th><th>Ficha</th></tr></thead>
-        <tbody>{items.map((row) => <tr key={row.id}><td>{row.nombre}</td><td>{row.tipoVehiculo}</td><td>{row.estado}</td><td><Button variant="secondary" onClick={() => setSelected(row.id)}>Ver {row.nombre}</Button></td></tr>)}</tbody>
+        <tbody>{items.map((row) => <tr key={row.id}><td>{row.nombre}</td><td>{row.tipoVehiculo}</td><td><span className={styles.courierStatus} data-active={row.estado === 'ACTIVO'}>{row.estado}</span></td><td><Button variant="secondary" onClick={() => setSelected(row.id)}>Ver {row.nombre}</Button></td></tr>)}</tbody>
       </table></div>}
     </section>}
     <section className={styles.card} aria-labelledby="courier-lookup-title">

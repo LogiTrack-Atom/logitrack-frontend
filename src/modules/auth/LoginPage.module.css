@@ -1,33 +1,61 @@
 .wrapper {
-  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, 1fr);
+  align-content: center;
+  max-width: 1140px;
+  margin-inline: auto;
+  padding: clamp(1.25rem, 4vw, 3rem);
+}
+
+.visual {
   display: grid;
   place-items: center;
-  padding: var(--space-4);
+  min-height: 545px;
+  padding: clamp(1.5rem, 5vw, 4rem);
+  border-radius: 24px 0 0 24px;
+  background:
+    repeating-radial-gradient(ellipse at 48% 49%, transparent 0 53px, #8dbbff22 54px 55px, transparent 56px 78px),
+    radial-gradient(ellipse at 48% 49%, #255bb0, #152f58 61%, #122747);
 }
+.visual img { width: min(100%, 315px); height: auto; filter: drop-shadow(0 10px 30px #0d204e80); }
 
 .panel {
-  width: 100%;
-  max-width: 460px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  justify-content: center;
+  gap: 1rem;
+  padding: clamp(1.5rem, 4vw, 3.25rem);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 0;
+  border-radius: 0 24px 24px 0;
 }
+.brand { width: 228px; max-width: 100%; height: auto; margin: -.75rem 0 .25rem; }
+.panel h1 { font-size: clamp(1.55rem, 4vw, 2rem); letter-spacing: -.04em; }
+.panel p { font-size: .875rem; }
+.panel a { width: fit-content; font-weight: 600; font-size: .875rem; }
+.description { color: var(--color-muted); }
+.panel [role='alert'] { border-radius: 8px; background: #fff0ed; color: #8b2920; padding: .7rem .85rem; }
+.success { border-radius: 8px; background: #e8f7f0; color: #135d3b; padding: .7rem .85rem; }
 
-.form {
-  display: grid;
-  gap: var(--space-3);
-}
-
+.form { display: grid; gap: .55rem; }
+.form label { font-size: .875rem; font-weight: 600; }
+.form label:not(:first-child) { margin-top: .45rem; }
 .form input {
   width: 100%;
-  min-height: 44px;
-  padding: var(--space-2);
-  border: 1px solid currentColor;
-  border-radius: 4px;
+  min-height: 46px;
+  padding: .65rem .75rem;
+  border: 1px solid #b8c6da;
+  border-radius: 8px;
+  color: var(--color-text);
+  background: #fbfcff;
   font: inherit;
 }
+.form button { margin-top: .65rem; }
 
-.form input:focus-visible {
-  outline: 3px solid var(--color-primary, #2563eb);
-  outline-offset: 2px;
+@media (max-width: 700px) {
+  .wrapper { grid-template-columns: minmax(0, 1fr); max-width: 480px; }
+  .visual { display: none; }
+  .panel { border: 1px solid var(--color-border); border-radius: 16px; }
 }

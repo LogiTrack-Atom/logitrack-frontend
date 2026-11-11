@@ -1,5 +1,6 @@
 import { useState, useSyncExternalStore } from 'react'
 import type { FormEvent } from 'react'
+import { PageHeader } from '../../shared/components/PageHeader'
 import { Button } from '../../shared/components/Button'
 import type { Rol } from '../auth/types'
 import { ROLES } from '../auth/types'
@@ -46,8 +47,8 @@ export function AdminWorkspace({ flow }: { flow: AdminFlowStore }) {
     ...(courierStep ? [['Ficha Courier', state.courierConfirmed], ['Vínculo Courier', state.courierLinked], ['Referencia Shipment', state.shipmentLinked]] : []),
   ]
   return <div className={styles.workspace}>
-    <header><h1>Administración</h1><p>Altas y asociaciones por pasos. Los IDs confirmados se conservan al navegar durante esta sesión; logout los limpia.</p></header>
-    <ol aria-label="Progreso administrativo" className={styles.steps}>{steps.map(([name, done]) => <li key={String(name)}>{name}: {done ? 'confirmado' : 'pendiente'}</li>)}</ol>
+    <PageHeader title="Administración" description="Creá cuentas y vinculalas a sus fichas de operación." />
+    <ol aria-label="Progreso administrativo" className={styles.steps}>{steps.map(([name, done]) => <li key={String(name)} data-confirmed={Boolean(done)}>{name}: {done ? 'confirmado' : 'pendiente'}</li>)}</ol>
     {state.error && <p role="alert">{state.error}</p>}
     {state.note && <p role="status">{state.note}</p>}
     {state.uncertain && <div role="alert" className={styles.card}>

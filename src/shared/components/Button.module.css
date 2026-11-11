@@ -1,8 +1,11 @@
 .button {
   font: inherit;
+  font-size: .875rem;
+  font-weight: 650;
+  min-height: 42px;
   padding: var(--space-2) var(--space-3);
   border: 1px solid transparent;
-  border-radius: var(--radius);
+  border-radius: 8px;
   cursor: pointer;
 }
 

@@ -1,0 +1,17 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .38rem;
+  padding: .28rem .62rem;
+  border-radius: 999px;
+  background: #edf1f7;
+  color: #354a65;
+  font-size: .75rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.badge::before { content: ''; width: .42rem; height: .42rem; border-radius: 50%; background: currentColor; }
+.badge[data-status='PENDIENTE'] { background: #fff2d9; color: #784900; }
+.badge[data-status='EN_RUTA'] { background: #e9f1ff; color: #174ca8; }
+.badge[data-status='ENTREGADO'] { background: #e2f5ed; color: #136347; }
+.badge[data-status='CANCELADO'] { background: #fdebe9; color: #963934; }

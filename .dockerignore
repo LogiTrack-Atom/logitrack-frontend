@@ -1,0 +1,25 @@
+# Contexto mínimo: no enviar Git, dependencias locales, artefactos ni entornos.
+**
+!package.json
+!package-lock.json
+!index.html
+!tsconfig.json
+!tsconfig.app.json
+!tsconfig.node.json
+!vite.config.ts
+!eslint.config.js
+!src/
+!src/**
+!public/
+!public/**
+!docker/
+!docker/**
+# Nunca incorporar claves o archivos de entorno aunque aparezcan bajo src/public.
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/id_rsa
+**/id_ed25519

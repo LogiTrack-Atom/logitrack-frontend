@@ -1,0 +1,49 @@
+import { browserLogin, browserRestore, browserLogout } from './browserSessionClient'
+import { API_PREFIX } from '../../../shared/config/api'
+import { USE_MOCKS } from '../../../shared/config/env'
+import { request } from '../../../shared/http/httpClient'
+import { mockPersonaForEmail, mockPersonaForToken } from '../mocks/personas'
+import { mockUserToken } from '../mocks/identityDirectory'
+import { tokenMock, usuarioClienteMock } from '../mocks/auth.mock'
+import type { Usuario } from '../types'
+import type { AuthTransport } from './session'
+
+/** Adapter de autenticación: solo rutas relativas conocidas del servicio de seguridad. */
+export const gatewayAuthTransport: AuthTransport = {
+  mode: 'gateway',
+  login: browserLogin,
+  resume: browserRestore,
+  endSession: browserLogout,
+  me: (token, signal) => request<Usuario>(`${API_PREFIX.security}/auth/me`, { headers: { Authorization: `Bearer ${token}` }, signal }),
+  register: (body, signal) => request<Usuario>(`${API_PREFIX.security}/auth/register`, { method: 'POST', body, signal }),
+}
+
+/** Demora cancelable. El token de demostración no es un JWT ni una credencial real. */
+function demo<T>(data: T, signal: AbortSignal): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const abort = () => {
+      clearTimeout(timer)
+      signal.removeEventListener('abort', abort)
+      reject(new DOMException('Operación cancelada.', 'AbortError'))
+    }
+    const timer = setTimeout(() => {
+      signal.removeEventListener('abort', abort)
+      resolve(structuredClone(data))
+    }, 250)
+    signal.addEventListener('abort', abort, { once: true })
+    if (signal.aborted) abort()
+  })
+}
+
+const mockTransport: AuthTransport = {
+  mode: 'mock',
+  login: (data, signal) => demo({ ...tokenMock, accessToken: mockUserToken(mockPersonaForEmail(data.email)) }, signal),
+  me: (token, signal) => {
+    const user = mockPersonaForToken(token)
+    return user ? demo(user, signal) : Promise.reject(new Error('Perfil simulado no válido.'))
+  },
+  register: (data, signal) => demo({ ...usuarioClienteMock, email: data.email }, signal),
+}
+
+/** El modo real se habilita explícitamente con VITE_USE_MOCKS=false. */
+export const activeAuthTransport: AuthTransport = USE_MOCKS ? mockTransport : gatewayAuthTransport
